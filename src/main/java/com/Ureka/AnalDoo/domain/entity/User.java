@@ -18,7 +18,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends TimeBaseEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long id;
 
@@ -28,16 +29,9 @@ public class User extends TimeBaseEntity {
     @Column(name = "nickname", nullable = false)
     private String nickname;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "social_type", nullable = false)
     private SocialType socialType;
-
-    // 연관관계: 작성한 대회 목록
-    @OneToMany(mappedBy = "manager", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Competition> competitions = new ArrayList<>();
-
-    // 연관관계: 예약 목록
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reservation> reservations = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
     public User(String email, String nickname, SocialType socialType) {
@@ -54,8 +48,7 @@ public class User extends TimeBaseEntity {
                 .build();
     }
 
-    public void updateInfo(String nickname) {
+    public void changeNickName(String nickname) {
         this.nickname = nickname;
     }
-
 }

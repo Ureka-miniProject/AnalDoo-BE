@@ -7,21 +7,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "competition")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Competition extends TimeBaseEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "competition_id")
     private Long id;
 
-    @Column(name = "manager_id", nullable = false)
-    private Long managerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id", nullable = false)
+    private User manager;
 
     @Column(name = "competition_name")
     private String name;
@@ -49,15 +48,12 @@ public class Competition extends TimeBaseEntity {
     @Embedded
     private Address address;
 
-    // 연관관계: 예약된 내역
-    @OneToMany(mappedBy = "competition", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reservation> reservations = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
-    public Competition(Long managerId, String name, String content, CompetitionPeriod period,
+    public Competition(User manager, String name, String content, CompetitionPeriod period,
                        int entryFee, int entryCount,
                        CompetitionStatus status, SportType sportType, Address address) {
-        this.managerId = managerId;
+        this.manager = manager;
         this.name = name;
         this.content = content;
         this.period = period;
@@ -68,11 +64,11 @@ public class Competition extends TimeBaseEntity {
         this.address = address;
     }
 
-    public static Competition of(Long managerId, String name, String content, CompetitionPeriod period,
+    public static Competition of(User manager, String name, String content, CompetitionPeriod period,
                                  int entryFee, int entryCount,
                                  CompetitionStatus status, SportType sportType, Address address) {
         return Competition.builder()
-                .managerId(managerId)
+                .manager(manager)
                 .name(name)
                 .content(content)
                 .period(period)
