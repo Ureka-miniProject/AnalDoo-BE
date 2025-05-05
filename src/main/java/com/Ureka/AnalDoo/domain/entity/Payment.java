@@ -70,8 +70,9 @@ public class Payment extends TimeBaseEntity {
                 .build();
     }
 
-    public void updateStatusToComplete(){
+    public void updateStatusToComplete(final String impUid){
         this.paymentStatus = PaymentStatus.PAID;
+        this.impUid = impUid;
     }
 
 }

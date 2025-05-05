@@ -8,12 +8,14 @@ import com.Ureka.AnalDoo.domain.entity.PaymentStatus;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentPrepareInfoResponse;
+import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationResponse;
 import com.Ureka.AnalDoo.domain.payment.repository.PaymentRepository;
 import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.request.PrepareData;
+import com.siot.IamportRestClient.response.IamportResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -31,9 +33,8 @@ public class PortOnePaymentServiceImpl implements PaymentService{
     private final UserRepository userRepository;
     private final IamportClient iamportClient;
 
-    private static final String MERCHANT_ID_PREFIX = "MERCHANT_";
-    private static final String IMP_ID_PREFIX = "IMP_";
 
+    // 결제 전 처리
     @Transactional
     public PaymentPrepareInfoResponse preparePayment(final Long userId,final Long reservationId){
 
@@ -43,21 +44,37 @@ public class PortOnePaymentServiceImpl implements PaymentService{
         checkValidatePayment(user,reservation);
 
         Payment payment = getPayment(reservation);
+        sendPrepareToPortOne(payment);
 
         return PaymentPrepareInfoResponse.of(payment);
     }
 
+    // 결제 후 처리
+    @Transactional
+    public void verifyPayment(final PaymentVerificationResponse paymentVerificationResponse){
+        IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = getIamportResponse(paymentVerificationResponse.getImpUid());
+        com.siot.IamportRestClient.response.Payment iamportPayment = iamportResponse.getResponse();
+
+        if(iamportPayment.getAmount().equals(paymentVerificationResponse.getAmount())){
+            Payment payment = paymentRepository.findByMerchantUid(paymentVerificationResponse.getMerchantUid())
+                    .orElseThrow(()-> new RestApiException(CommonErrorCode.PAYMENT_NOT_FOUND));
+
+            payment.updateStatusToComplete(paymentVerificationResponse.getImpUid());
+        }
+        else{
+            throw new RestApiException(CommonErrorCode.PAYMENT_PRICE_NOT_MATHCH);
+        }
+    }
     // 기존 결제 전 정보가 있다면 가지고 오고 그렇지 않다면 새로운 결제 반환
     private Payment getPayment(final Reservation reservation) {
 
         return paymentRepository.findByReservationAndPaymentStatus(reservation,PaymentStatus.READY).orElseGet(()->{
-            Payment newPayment = Payment.createPayment(MERCHANT_ID_PREFIX + UUID.randomUUID(),
-                                                           IMP_ID_PREFIX + UUID.randomUUID(),
-                                                                  PayMethod.CARD,
-                                                                  BigDecimal.valueOf(reservation.getCompetition().getEntryFee()),
-                                                                   reservation);
+            Payment newPayment = Payment.createPayment(UUID.randomUUID().toString(),
+                                                       UUID.randomUUID().toString(),
+                                                       PayMethod.CARD,
+                                                       BigDecimal.valueOf(reservation.getCompetition().getEntryFee()),
+                                                       reservation);
             paymentRepository.save(newPayment);
-            sendPrepareToPortOne(newPayment);
             return newPayment;
         });
 
@@ -100,6 +117,15 @@ public class PortOnePaymentServiceImpl implements PaymentService{
     private PrepareData createPrepareData(final Payment payment) {
 
         return new PrepareData(payment.getMerchantUid(),payment.getAmount());
+    }
+
+    private IamportResponse<com.siot.IamportRestClient.response.Payment> getIamportResponse(final String ImpUid){
+
+        try{
+            return iamportClient.paymentByImpUid(ImpUid);
+        } catch (IOException | IamportResponseException e) {
+            throw new RestApiException(CommonErrorCode.PG_ERROR);
+        }
     }
 
 }
