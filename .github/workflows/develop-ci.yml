@@ -35,3 +35,23 @@ jobs:
 
       - name: Build with Gradle Wrapper
         run: ./gradlew build
+
+      - name: Discord Alarm when fail
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_BE_WEB_HOOK_URL }}
+          title: "❗️  Backend CI failed ❗️"
+          description: "build fail"
+          color: 0xff0000
+          username: Github Actions
+
+      - name: Discord Alarm when success
+        uses: sarisia/actions-status-discord@v1
+        if: success()
+        with:
+          webhook: ${{ secrets.DISCORD_BE_WEB_HOOK_URL }}
+          title: "✅ Backend CI success ✅"
+          description: "build success"
+          color: 0x00ff00
+          username: Github Actions
