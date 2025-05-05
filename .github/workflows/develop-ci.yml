@@ -1,0 +1,62 @@
+name: Develop CI
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Create test application.yml
+        run: |
+          rm -rf ./src/test/resources
+          mkdir -p ./src/test/resources
+          echo "${{ secrets.APPLICATION_TEST }}" > ./src/test/resources/application.yml
+
+      - name: Gradle Caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle Wrapper
+        run: ./gradlew build
+
+      - name: Discord Alarm when fail
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_BE_WEB_HOOK_URL }}
+          title: "❗️Backend CI failed ❗️"
+          color: 0xff0000
+          username: Github Actions
+
+      - name: Discord Alarm when success
+        uses: sarisia/actions-status-discord@v1
+        if: success()
+        with:
+          webhook: ${{ secrets.DISCORD_BE_WEB_HOOK_URL }}
+          title: "✅ Backend CI success ✅"
+          color: 0x00ff00
+          username: Github Actions
