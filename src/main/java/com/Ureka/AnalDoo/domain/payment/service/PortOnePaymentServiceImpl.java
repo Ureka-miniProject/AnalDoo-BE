@@ -1,7 +1,9 @@
 package com.Ureka.AnalDoo.domain.payment.service;
 
 import com.Ureka.AnalDoo.common.exception.RestApiException;
-import com.Ureka.AnalDoo.common.exception.errorcode.CommonErrorCode;
+import com.Ureka.AnalDoo.common.exception.errorcode.PaymentErrorCode;
+import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
+import com.Ureka.AnalDoo.common.exception.errorcode.UserErrorCode;
 import com.Ureka.AnalDoo.domain.entity.PayMethod;
 import com.Ureka.AnalDoo.domain.entity.Payment;
 import com.Ureka.AnalDoo.domain.entity.PaymentStatus;
@@ -57,12 +59,12 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
         if(iamportPayment.getAmount().equals(paymentVerificationResponse.getAmount())){
             Payment payment = paymentRepository.findByMerchantUid(paymentVerificationResponse.getMerchantUid())
-                    .orElseThrow(()-> new RestApiException(CommonErrorCode.PAYMENT_NOT_FOUND));
+                    .orElseThrow(()-> new RestApiException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
             payment.updateStatusToComplete(paymentVerificationResponse.getImpUid());
         }
         else{
-            throw new RestApiException(CommonErrorCode.PAYMENT_PRICE_NOT_MATHCH);
+            throw new RestApiException(PaymentErrorCode.PAYMENT_PRICE_NOT_MATCH);
         }
     }
     // 기존 결제 전 정보가 있다면 가지고 오고 그렇지 않다면 새로운 결제 반환
@@ -82,12 +84,12 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     private Reservation getReservationById(Long reservationId) {
         return reservationRepository.findById(reservationId).orElseThrow(() -> new RestApiException(
-                CommonErrorCode.RESERVATION_NOT_FOUND));
+                ReservationErrorCode.RESERVATION_NOT_FOUND));
     }
 
     private User getUserById(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new RestApiException(
-                CommonErrorCode.USER_NOT_FOUND));
+                UserErrorCode.USER_NOT_FOUND));
     }
 
     // 유효한 결제인지 확인한다.
@@ -95,12 +97,12 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
         // 현재 로그인한 주체가 예약 주체인지 확인
         if(!reservation.getUser().getId().equals(user.getId())){
-            throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+            throw new RestApiException(ReservationErrorCode.RESERVATION_USER_NOT_MATCH);
         }
 
         // 이미 결제 완료한 예약이라면 예외
         if(paymentRepository.existsByReservationAndPaymentStatus(reservation,PaymentStatus.PAID)){
-            throw new RestApiException(CommonErrorCode.ALREADY_PROCEED_PAY);
+            throw new RestApiException(PaymentErrorCode.ALREADY_PROCEED_PAY);
         }
 
     }
@@ -110,7 +112,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
         try {
             iamportClient.postPrepare(createPrepareData(payment));
         } catch (IOException | IamportResponseException e) {
-            throw new RestApiException(CommonErrorCode.PG_ERROR);
+            throw new RestApiException(PaymentErrorCode.PG_ERROR);
         }
     }
 
@@ -124,7 +126,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
         try{
             return iamportClient.paymentByImpUid(ImpUid);
         } catch (IOException | IamportResponseException e) {
-            throw new RestApiException(CommonErrorCode.PG_ERROR);
+            throw new RestApiException(PaymentErrorCode.PG_ERROR);
         }
     }
 
