@@ -43,7 +43,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
         Reservation reservation = getReservationById(reservationId);
         User user = getUserById(userId);
 
-        checkValidatePayment(user,reservation);
+        validatePayment(user,reservation);
 
         Payment payment = getPayment(reservation);
         sendPrepareToPortOne(payment);
@@ -93,7 +93,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
     }
 
     // 유효한 결제인지 확인한다.
-    private void checkValidatePayment(final User user,final Reservation reservation){
+    private void validatePayment(final User user,final Reservation reservation){
 
         // 현재 로그인한 주체가 예약 주체인지 확인
         if(!reservation.getUser().getId().equals(user.getId())){
