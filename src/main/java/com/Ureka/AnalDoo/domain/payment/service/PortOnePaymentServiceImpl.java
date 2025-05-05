@@ -41,7 +41,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
     public PaymentPrepareInfoResponse preparePayment(final Long userId,final Long reservationId){
 
         Reservation reservation = getReservationById(reservationId);
-        User user = getUserById(userId);
+        User user = userRepository.getById(userId);
 
         validatePayment(user,reservation);
 
@@ -87,10 +87,6 @@ public class PortOnePaymentServiceImpl implements PaymentService{
                 ReservationErrorCode.RESERVATION_NOT_FOUND));
     }
 
-    private User getUserById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new RestApiException(
-                UserErrorCode.USER_NOT_FOUND));
-    }
 
     // 유효한 결제인지 확인한다.
     private void validatePayment(final User user,final Reservation reservation){
