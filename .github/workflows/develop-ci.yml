@@ -27,6 +27,16 @@ jobs:
           mkdir -p ./src/test/resources
           echo "${{ secrets.APPLICATION_TEST }}" > ./src/test/resources/application.yml
 
+      - name: Gradle Caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -41,8 +51,7 @@ jobs:
         if: failure()
         with:
           webhook: ${{ secrets.DISCORD_BE_WEB_HOOK_URL }}
-          title: "❗️  Backend CI failed ❗️"
-          description: "build fail"
+          title: "❗️Backend CI failed ❗️"
           color: 0xff0000
           username: Github Actions
 
@@ -52,6 +61,5 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_BE_WEB_HOOK_URL }}
           title: "✅ Backend CI success ✅"
-          description: "build success"
           color: 0x00ff00
           username: Github Actions
