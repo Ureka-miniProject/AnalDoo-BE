@@ -3,14 +3,13 @@ package com.Ureka.AnalDoo.domain.payment.service;
 import com.Ureka.AnalDoo.common.exception.RestApiException;
 import com.Ureka.AnalDoo.common.exception.errorcode.PaymentErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
-import com.Ureka.AnalDoo.common.exception.errorcode.UserErrorCode;
 import com.Ureka.AnalDoo.domain.entity.PayMethod;
 import com.Ureka.AnalDoo.domain.entity.Payment;
 import com.Ureka.AnalDoo.domain.entity.PaymentStatus;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentPrepareInfoResponse;
-import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationResponse;
+import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationRequest;
 import com.Ureka.AnalDoo.domain.payment.repository.PaymentRepository;
 import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
@@ -53,15 +52,17 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     // 결제 후 처리
     @Transactional
-    public void verifyPayment(final PaymentVerificationResponse paymentVerificationResponse){
-        IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = getIamportResponse(paymentVerificationResponse.getImpUid());
+    public void verifyPayment(final PaymentVerificationRequest paymentVerificationRequest){
+
+        IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = getIamportResponse(
+                paymentVerificationRequest.getImpUid());
         com.siot.IamportRestClient.response.Payment iamportPayment = iamportResponse.getResponse();
 
-        if(iamportPayment.getAmount().equals(paymentVerificationResponse.getAmount())){
-            Payment payment = paymentRepository.findByMerchantUid(paymentVerificationResponse.getMerchantUid())
+        if(iamportPayment.getAmount().equals(paymentVerificationRequest.getAmount())){
+            Payment payment = paymentRepository.findByMerchantUid(paymentVerificationRequest.getMerchantUid())
                     .orElseThrow(()-> new RestApiException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
-            payment.updateStatusToComplete(paymentVerificationResponse.getImpUid());
+            payment.updateStatusToComplete(paymentVerificationRequest.getImpUid());
         }
         else{
             throw new RestApiException(PaymentErrorCode.PAYMENT_PRICE_NOT_MATCH);

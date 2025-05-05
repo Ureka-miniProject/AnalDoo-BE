@@ -1,10 +1,9 @@
 package com.Ureka.AnalDoo.domain.payment.controller;
 
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentPrepareInfoResponse;
-import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationResponse;
+import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationRequest;
 import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
-import com.siot.IamportRestClient.exception.IamportResponseException;
-import java.io.IOException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +25,7 @@ public class PaymentController {
     }
 
     @PostMapping("/verify")
-    public void paymentVerify(@RequestBody PaymentVerificationResponse paymentVerificationDto){
+    public void paymentVerify(@RequestBody @Valid PaymentVerificationRequest paymentVerificationDto){
 
         paymentService.verifyPayment(paymentVerificationDto);
     }
