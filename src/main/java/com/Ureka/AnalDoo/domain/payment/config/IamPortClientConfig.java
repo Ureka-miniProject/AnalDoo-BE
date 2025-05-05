@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class IamPortClientConfig {
 
-    @Value("${portOne.apiKey}")
+    @Value("${portOne.apiKey:@null}")
     private String apiKey;
 
-    @Value("${portOne.apiSecret}")
+    @Value("${portOne.apiSecret:@null}")
     private String apiSecret;
 
 
