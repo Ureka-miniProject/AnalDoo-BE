@@ -13,8 +13,7 @@ public enum CommonErrorCode implements ErrorCode {
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "Invalid token"),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "Expired token"),
     NOT_EXIST_BEARER_SUFFIX(HttpStatus.UNAUTHORIZED, "Bearer prefix is missing."),
-    REFRESH_DENIED(HttpStatus.FORBIDDEN, "Refresh denied"),
-    ;
+    REFRESH_DENIED(HttpStatus.FORBIDDEN, "Refresh denied");
 
     private final HttpStatus httpStatus;
     private final String message;
