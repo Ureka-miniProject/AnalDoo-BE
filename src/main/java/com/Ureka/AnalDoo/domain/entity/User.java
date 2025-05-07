@@ -37,28 +37,29 @@ public class User extends TimeBaseEntity {
     private String socialId;
 
     @Column(name = "refresh_token", nullable = false)
-    private String refreshToeken;
+    private String refreshToken;
 
     @Builder(access = AccessLevel.PRIVATE)
-    public User(String email, String nickname, SocialType socialType,String socialId ,String refreshToeken) {
+    public User(String email, String nickname, SocialType socialType,String socialId ,String refreshToken) {
         this.email = email;
         this.nickname = nickname;
         this.socialType = socialType;
-        this.refreshToeken = refreshToeken;
+        this.refreshToken = refreshToken;
         this.socialId = socialId;
     }
 
-    public static User of(String email, String nickname, SocialType socialType, String refreshToeken) {
+    public static User of(String email, String nickname, SocialType socialType,String socialId ,String refreshToeken) {
         return User.builder()
                 .email(email)
                 .nickname(nickname)
                 .socialType(socialType)
-                .refreshToeken(refreshToeken)
+                .socialId(socialId)
+                .refreshToken(refreshToeken)
                 .build();
     }
 
     public void updateRefreshToken(String newToken) {
-        this.refreshToeken = newToken;
+        this.refreshToken = newToken;
     }
 
     public void changeNickName(String nickname) {
