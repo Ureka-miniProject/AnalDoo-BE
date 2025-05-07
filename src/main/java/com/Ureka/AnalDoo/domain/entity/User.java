@@ -33,19 +33,30 @@ public class User extends TimeBaseEntity {
     @Column(name = "social_type", nullable = false)
     private SocialType socialType;
 
+    @Column(name = "social_id", nullable = false)
+    private String socialId;
+
+    @Column(name = "refresh_token", nullable = false)
+    private String refresh_token;
+
     @Builder(access = AccessLevel.PRIVATE)
-    public User(String email, String nickname, SocialType socialType) {
+    public User(String email, String nickname, SocialType socialType, String refresh_token) {
         this.email = email;
         this.nickname = nickname;
         this.socialType = socialType;
     }
 
-    public static User of(String email, String nickname, SocialType socialType) {
+    public static User of(String email, String nickname, SocialType socialType, String refresh_token) {
         return User.builder()
                 .email(email)
                 .nickname(nickname)
                 .socialType(socialType)
+                .refresh_token(refresh_token)
                 .build();
+    }
+
+    public void updateRefreshToken(String newToken) {
+        this.refresh_token = newToken;
     }
 
     public void changeNickName(String nickname) {
