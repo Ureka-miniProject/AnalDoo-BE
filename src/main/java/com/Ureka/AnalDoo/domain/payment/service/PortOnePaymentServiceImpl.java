@@ -115,8 +115,9 @@ public class PortOnePaymentServiceImpl implements PaymentService{
         // 현재 로그인한 주체가 예약 주체인지 확인
         validateReservation(user, reservation);
 
-        // 이미 결제 완료한 예약이라면 예외
-        if(paymentRepository.existsByReservationAndPaymentStatus(reservation,PaymentStatus.PAID)){
+        // 이미 결제 완료하거나 취소된 예약이라면 예외
+        if(paymentRepository.existsByReservationAndPaymentStatus(reservation,PaymentStatus.PAID) ||
+           paymentRepository.existsByReservationAndPaymentStatus(reservation,PaymentStatus.CANCEL)){
             throw new RestApiException(PaymentErrorCode.ALREADY_PROCEED_PAY);
         }
 
