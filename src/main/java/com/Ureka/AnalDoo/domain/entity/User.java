@@ -33,7 +33,7 @@ public class User extends TimeBaseEntity {
     @Column(name = "social_type", nullable = false)
     private SocialType socialType;
 
-    @Column(name = "social_id", nullable = false)
+    @Column(name = "social_id", nullable = false, unique = true)
     private String socialId;
 
     @Column(name = "refresh_token", nullable = false)
@@ -48,13 +48,13 @@ public class User extends TimeBaseEntity {
         this.socialId = socialId;
     }
 
-    public static User of(String email, String nickname, SocialType socialType,String socialId ,String refreshToeken) {
+    public static User of(String email, String nickname, SocialType socialType,String socialId ,String refreshToken) {
         return User.builder()
                 .email(email)
                 .nickname(nickname)
                 .socialType(socialType)
                 .socialId(socialId)
-                .refreshToken(refreshToeken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
