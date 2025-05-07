@@ -75,4 +75,8 @@ public class Payment extends TimeBaseEntity {
         this.impUid = impUid;
     }
 
+    public void updateStatusToCancel(){
+        this.paymentStatus = PaymentStatus.CANCEL;
+    }
+
 }
