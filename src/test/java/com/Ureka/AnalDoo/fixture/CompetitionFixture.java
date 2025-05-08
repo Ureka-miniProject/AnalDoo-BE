@@ -4,6 +4,7 @@ import com.Ureka.AnalDoo.domain.entity.Address;
 import com.Ureka.AnalDoo.domain.entity.Competition;
 import com.Ureka.AnalDoo.domain.entity.CompetitionPeriod;
 import com.Ureka.AnalDoo.domain.entity.CompetitionStatus;
+import com.Ureka.AnalDoo.domain.entity.Local;
 import com.Ureka.AnalDoo.domain.entity.SportType;
 import com.Ureka.AnalDoo.domain.entity.User;
 import java.time.LocalDateTime;
@@ -68,7 +69,7 @@ public class CompetitionFixture {
 
     public static Address createAddress() {
         return new Address(
-                "서울시",
+                Local.SEOUL,
                 "테헤란로 123",
                 "06236",
                 "101동 202호"
