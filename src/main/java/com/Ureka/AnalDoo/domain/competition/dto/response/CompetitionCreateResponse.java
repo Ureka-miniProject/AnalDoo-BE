@@ -42,7 +42,7 @@ public class CompetitionCreateResponse {
         this.entryCount = competition.getEntryCount();
         this.status = competition.getStatus();
         this.sportType = competition.getSportType();
-        this.local = competition.getAddress().getLocal();
+        this.local = competition.getAddress().getLocal().getName();
         this.street = competition.getAddress().getStreet();
         this.zipcode = competition.getAddress().getZipcode();
         this.detail = competition.getAddress().getDetail();
