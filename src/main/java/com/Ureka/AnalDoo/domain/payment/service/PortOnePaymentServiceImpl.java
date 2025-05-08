@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PortOnePaymentServiceImpl implements PaymentService{
+
+
+    @Value("${portOne.channelKey:@null}")
+    private String channelKey;
 
     private final PaymentRepository paymentRepository;
     private final ReservationRepository reservationRepository;
@@ -49,7 +54,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
         Payment payment = getPayment(reservation);
         sendPrepareToPortOne(payment);
 
-        return PaymentPrepareInfoResponse.of(payment);
+        return PaymentPrepareInfoResponse.from(payment,channelKey);
     }
 
     // 결제 후 처리

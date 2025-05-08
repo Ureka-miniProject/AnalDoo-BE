@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentPrepareInfoResponse {
 
+    private String channelKey;
     private String payMethod;
     private String merchantUId;
     private String name;
@@ -20,8 +21,9 @@ public class PaymentPrepareInfoResponse {
     private String buyerEmail;
 
 
-    public static PaymentPrepareInfoResponse of(final Payment payment){
-        return new PaymentPrepareInfoResponse(payment.getPayMethod().toString(),
+    public static PaymentPrepareInfoResponse from(final Payment payment,final String channelKey){
+        return new PaymentPrepareInfoResponse(channelKey,
+                                       payment.getPayMethod().toString(),
                                        payment.getMerchantUid(),
                                        payment.getReservation().getCompetition().getName(),
                                        BigDecimal.valueOf(payment.getReservation().getCompetition().getEntryFee()),
