@@ -8,6 +8,7 @@ import com.Ureka.AnalDoo.domain.entity.User;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface PaymentRepository extends JpaRepository<Payment,Long> {
 
@@ -16,4 +17,7 @@ public interface PaymentRepository extends JpaRepository<Payment,Long> {
     Optional<Payment> findByReservationAndPaymentStatus(Reservation reservation,PaymentStatus paymentStatus);
 
     Optional<Payment> findByMerchantUid(String merchantUid);
+
+    @Query("select p from Payment p where p.reservation.id =:reservationId")
+    Optional<Payment> findByReservationId(@Param("reservationId") Long reservationId);
 }
