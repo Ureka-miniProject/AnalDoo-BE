@@ -1,0 +1,26 @@
+package com.Ureka.AnalDoo.domain.reservation.controller;
+
+import com.Ureka.AnalDoo.domain.reservation.dto.request.ReservationCreateRequest;
+import com.Ureka.AnalDoo.domain.reservation.dto.response.ReservationCreateResponse;
+import com.Ureka.AnalDoo.domain.reservation.service.ReservationService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/reservation")
+@RequiredArgsConstructor
+public class ReservationController {
+
+    private final ReservationService reservationService;
+
+    @PostMapping
+    public ResponseEntity<ReservationCreateResponse> create(@RequestBody @Valid ReservationCreateRequest request){
+        ReservationCreateResponse response = reservationService.create(request, 1L);
+        return ResponseEntity.ok(response);
+    }
+}

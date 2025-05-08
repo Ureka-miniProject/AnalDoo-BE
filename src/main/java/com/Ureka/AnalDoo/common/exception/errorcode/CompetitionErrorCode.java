@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 public enum CompetitionErrorCode implements ErrorCode {
 
     COMPETITION_NOT_FOUND(HttpStatus.NOT_FOUND, "대회를 찾을 수 없습니다."),
-    COMPETITION_CLOSED(HttpStatus.BAD_REQUEST, "이미 모집이 마감된 대회입니다.")
     ;
 
     private final HttpStatus httpStatus;
