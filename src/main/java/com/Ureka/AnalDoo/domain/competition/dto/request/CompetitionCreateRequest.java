@@ -2,6 +2,7 @@ package com.Ureka.AnalDoo.domain.competition.dto.request;
 
 import com.Ureka.AnalDoo.domain.entity.Address;
 import com.Ureka.AnalDoo.domain.entity.CompetitionPeriod;
+import com.Ureka.AnalDoo.domain.entity.Local;
 import com.Ureka.AnalDoo.domain.entity.SportType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -37,8 +38,8 @@ public class CompetitionCreateRequest {
     @NotNull(message = "종목은 필수입니다.")
     private SportType sportType;
 
-    @NotBlank(message = "지역은 필수입니다.")
-    private String local;
+    @NotNull(message = "지역은 필수입니다.")
+    private Local local;
 
     @NotBlank(message = "도로명은 필수입니다.")
     private String street;
