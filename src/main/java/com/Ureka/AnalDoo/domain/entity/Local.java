@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Local {
 
-    서울("서울"),광주("광주"),대구("대구");
+    SEOUL("서울"),GWANGJU("광주"),DAEGU("대구");
 
     private final String name;
 
