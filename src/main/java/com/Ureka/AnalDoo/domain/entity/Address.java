@@ -1,5 +1,6 @@
 package com.Ureka.AnalDoo.domain.entity;
 
+import com.Ureka.AnalDoo.domain.entity.enums.Local;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;

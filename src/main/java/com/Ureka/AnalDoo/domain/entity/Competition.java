@@ -1,6 +1,8 @@
 package com.Ureka.AnalDoo.domain.entity;
 
 import com.Ureka.AnalDoo.common.domain.TimeBaseEntity;
+import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
+import com.Ureka.AnalDoo.domain.entity.enums.SportType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

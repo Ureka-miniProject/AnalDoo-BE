@@ -1,6 +1,6 @@
 package com.Ureka.AnalDoo.fixture;
 
-import com.Ureka.AnalDoo.domain.entity.SocialType;
+import com.Ureka.AnalDoo.domain.entity.enums.SocialType;
 import com.Ureka.AnalDoo.domain.entity.User;
 import org.springframework.test.util.ReflectionTestUtils;
 

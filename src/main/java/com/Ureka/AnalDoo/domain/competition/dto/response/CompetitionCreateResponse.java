@@ -1,10 +1,8 @@
 package com.Ureka.AnalDoo.domain.competition.dto.response;
 
-import com.Ureka.AnalDoo.domain.entity.Address;
 import com.Ureka.AnalDoo.domain.entity.Competition;
-import com.Ureka.AnalDoo.domain.entity.CompetitionPeriod;
-import com.Ureka.AnalDoo.domain.entity.CompetitionStatus;
-import com.Ureka.AnalDoo.domain.entity.SportType;
+import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
+import com.Ureka.AnalDoo.domain.entity.enums.SportType;
 import lombok.Builder;
 import lombok.Getter;
 

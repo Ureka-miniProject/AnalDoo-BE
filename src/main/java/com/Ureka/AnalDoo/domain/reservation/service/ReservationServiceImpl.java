@@ -5,7 +5,7 @@ import com.Ureka.AnalDoo.common.exception.errorcode.CompetitionErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
 import com.Ureka.AnalDoo.domain.competition.repository.CompetitionRepository;
 import com.Ureka.AnalDoo.domain.entity.Competition;
-import com.Ureka.AnalDoo.domain.entity.CompetitionStatus;
+import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
 import com.Ureka.AnalDoo.domain.reservation.dto.request.ReservationCreateRequest;

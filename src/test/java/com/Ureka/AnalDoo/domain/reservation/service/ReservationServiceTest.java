@@ -8,6 +8,7 @@ import com.Ureka.AnalDoo.common.exception.RestApiException;
 import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
 import com.Ureka.AnalDoo.domain.competition.repository.CompetitionRepository;
 import com.Ureka.AnalDoo.domain.entity.*;
+import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
 import com.Ureka.AnalDoo.domain.reservation.dto.request.ReservationCreateRequest;
 import com.Ureka.AnalDoo.domain.reservation.dto.response.ReservationCreateResponse;
 import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
