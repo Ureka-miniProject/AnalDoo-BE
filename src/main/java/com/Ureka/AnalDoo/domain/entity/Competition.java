@@ -37,6 +37,9 @@ public class Competition extends TimeBaseEntity {
     @Column(name = "entry_count", nullable = false)
     private int entryCount;
 
+    @Column(name = "current_entry_count", nullable = false)
+    private int currentEntryCount = 0;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "competition_status", nullable = false, length = 10)
     private CompetitionStatus status;
@@ -78,5 +81,13 @@ public class Competition extends TimeBaseEntity {
                 .sportType(sportType)
                 .address(address)
                 .build();
+    }
+
+    public void increaseEntryCount() {
+        this.currentEntryCount++;
+    }
+
+    public boolean isFull() {
+        return this.currentEntryCount >= this.entryCount;
     }
 }
