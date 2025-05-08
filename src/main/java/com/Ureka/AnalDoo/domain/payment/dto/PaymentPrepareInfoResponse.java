@@ -21,7 +21,7 @@ public class PaymentPrepareInfoResponse {
     private String buyerEmail;
 
 
-    public static PaymentPrepareInfoResponse from(final Payment payment,final String channelKey){
+    public static PaymentPrepareInfoResponse of(final Payment payment,final String channelKey){
         return new PaymentPrepareInfoResponse(channelKey,
                                        payment.getPayMethod().toString(),
                                        payment.getMerchantUid(),

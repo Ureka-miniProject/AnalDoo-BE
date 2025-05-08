@@ -14,7 +14,7 @@ public class PaymentCancelResponse {
 
     private BigDecimal amount;
 
-    public static PaymentCancelResponse of(final Payment payment){
+    public static PaymentCancelResponse from(final Payment payment){
         return new PaymentCancelResponse(payment.getAmount());
     }
 

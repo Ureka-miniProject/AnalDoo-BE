@@ -54,7 +54,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
         Payment payment = getPayment(reservation);
         sendPrepareToPortOne(payment);
 
-        return PaymentPrepareInfoResponse.from(payment,channelKey);
+        return PaymentPrepareInfoResponse.of(payment,channelKey);
     }
 
     // 결제 후 처리
@@ -90,7 +90,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
         com.siot.IamportRestClient.response.Payment paymentCancelResponse = cancelPayment(payment);
 
-        return PaymentCancelResponse.of(paymentCancelResponse);
+        return PaymentCancelResponse.from(paymentCancelResponse);
     }
 
     // 기존 결제 전 정보가 있다면 가지고 오고 그렇지 않다면 새로운 결제 반환
@@ -108,7 +108,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     }
 
-    private Reservation getReservationById(Long reservationId) {
+    private Reservation getReservationById(final Long reservationId) {
         return reservationRepository.findById(reservationId).orElseThrow(() -> new RestApiException(
                 ReservationErrorCode.RESERVATION_NOT_FOUND));
     }
@@ -128,7 +128,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     }
 
-    private void validateReservation(User user, Reservation reservation) {
+    private void validateReservation(final User user, final Reservation reservation) {
         if(!reservation.getUser().getId().equals(user.getId())){
             throw new RestApiException(ReservationErrorCode.RESERVATION_USER_NOT_MATCH);
         }
