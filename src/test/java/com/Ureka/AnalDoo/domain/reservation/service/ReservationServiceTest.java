@@ -41,7 +41,7 @@ class ReservationServiceTest {
         Long userId = 1L;
         Long competitionId = 1L;
 
-        User user = UserFixture.createUserWithId(userId, "1@naver.com");
+        User user = UserFixture.createUserWithId(userId, "1@naver.com", "user1", "1111");
         Competition competition = CompetitionFixture.createCompetitionWithId(competitionId, user, CompetitionStatus.OPEN, 10);
         Reservation reservation = ReservationFixture.createReservation(user, competition);
         ReservationCreateRequest request = new ReservationCreateRequest(competitionId);
@@ -64,7 +64,7 @@ class ReservationServiceTest {
         Long userId = 1L;
         Long competitionId = 1L;
 
-        User user = UserFixture.createUserWithId(userId, "1@naver.com");
+        User user = UserFixture.createUserWithId(userId, "1@naver.com", "user1", "1111");
         Competition closedCompetition = CompetitionFixture.createCompetitionWithId(competitionId, user, CompetitionStatus.CLOSED, 10);
         ReservationCreateRequest request = new ReservationCreateRequest(competitionId);
 
@@ -84,7 +84,7 @@ class ReservationServiceTest {
         Long userId = 1L;
         Long competitionId = 1L;
 
-        User user = UserFixture.createUserWithId(userId, "1@naver.com");
+        User user = UserFixture.createUserWithId(userId, "1@naver.com", "user1", "1111");
         Competition expiredCompetition = CompetitionFixture.createExpiredCompetition(competitionId, user);
         ReservationCreateRequest request = new ReservationCreateRequest(competitionId);
 

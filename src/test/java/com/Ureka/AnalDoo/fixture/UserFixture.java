@@ -7,13 +7,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 public class UserFixture {
 
-    public static User createUser(String email) {
-        User user = User.of(email, "user1", "111", SocialType.KAKAO, Role.PARTICIPANT, "1111");
+    public static User createUser(String email, String nickname, String socialId) {
+        User user = User.of(email, nickname, socialId, SocialType.KAKAO, Role.PARTICIPANT, "1111");
         return user;
     }
 
-    public static User createUserWithId(Long id, String email) {
-        User user = User.of(email, "user1", "111", SocialType.KAKAO, Role.PARTICIPANT, "1111");
+    public static User createUserWithId(Long id, String email, String nickname, String socialId) {
+        User user = User.of(email, nickname, socialId, SocialType.KAKAO, Role.PARTICIPANT, "1111");
         ReflectionTestUtils.setField(user, "id", id);
         return user;
     }
