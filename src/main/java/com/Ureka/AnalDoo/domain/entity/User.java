@@ -6,11 +6,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.antlr.v4.runtime.misc.NotNull;
-import org.hibernate.annotations.NotFound;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -26,40 +21,67 @@ public class User extends TimeBaseEntity {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "nickname", nullable = false)
+    @Column(name = "password", nullable = true)
+    private String password;
+
+    @Column(name = "nickname", nullable = true, unique = true)
     private String nickname;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "social_type", nullable = false)
     private SocialType socialType;
 
-    @Column(name = "social_id", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
+
+    @Column(name = "social_id", nullable = true, unique = true)
     private String socialId;
 
-    @Column(name = "refresh_token", nullable = false)
-    private String refresh_token;
+    @Column(name = "refresh_token", nullable = true)
+    private String refreshToken;
 
     @Builder(access = AccessLevel.PRIVATE)
-    public User(String email, String nickname, SocialType socialType, String refresh_token) {
+    private User(String email, String password, String nickname,
+                 String socialId, SocialType socialType,
+                 Role role, String refreshToken) {
         this.email = email;
+        this.password = password;
         this.nickname = nickname;
-        this.socialType = socialType;
+        this.socialId = socialId;
+        this.socialType = socialType != null ? socialType : SocialType.NONE;
+        this.role = role != null ? role : Role.PARTICIPANT;
+        this.refreshToken = refreshToken;
     }
 
-    public static User of(String email, String nickname, SocialType socialType, String refresh_token) {
+    // 정적 생성자
+    public static User of(String email, String nickname, String socialId,
+                          SocialType socialType, Role role, String refreshToken) {
         return User.builder()
                 .email(email)
                 .nickname(nickname)
+                .socialId(socialId)
                 .socialType(socialType)
-                .refresh_token(refresh_token)
+                .role(role)
+                .refreshToken(refreshToken)
                 .build();
     }
 
-    public void updateRefreshToken(String newToken) {
-        this.refresh_token = newToken;
+    public void updateProfile(String nickname, String password) {
+        this.nickname = nickname;
+        this.password = password;
     }
 
-    public void changeNickName(String nickname) {
-        this.nickname = nickname;
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public void removeRefreshToken() {
+        this.refreshToken = null;
+    }
+
+    public User updateAndReturnPassword(String password) {
+        this.password = password;
+        return this;
     }
 }
