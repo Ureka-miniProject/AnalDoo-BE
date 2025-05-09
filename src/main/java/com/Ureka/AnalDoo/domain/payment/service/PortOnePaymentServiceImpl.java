@@ -3,11 +3,11 @@ package com.Ureka.AnalDoo.domain.payment.service;
 import com.Ureka.AnalDoo.common.exception.RestApiException;
 import com.Ureka.AnalDoo.common.exception.errorcode.PaymentErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
-import com.Ureka.AnalDoo.domain.entity.enums.PayMethod;
 import com.Ureka.AnalDoo.domain.entity.Payment;
-import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
+import com.Ureka.AnalDoo.domain.entity.enums.PayMethod;
+import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentCancelResponse;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentPrepareInfoResponse;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationRequest;
@@ -44,10 +44,10 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     // 결제 전 처리
     @Transactional
-    public PaymentPrepareInfoResponse preparePayment(final Long userId,final Long reservationId){
+    public PaymentPrepareInfoResponse preparePayment(final String email,final Long reservationId){
 
         Reservation reservation = getReservationById(reservationId);
-        User user = userRepository.getById(userId);
+        User user = userRepository.getByEmail(email);
 
         validatePayment(user,reservation);
 
@@ -59,15 +59,21 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     // 결제 후 처리
     @Transactional
-    public void verifyPayment(final PaymentVerificationRequest paymentVerificationRequest){
+    public void verifyPayment(final String email,final PaymentVerificationRequest paymentVerificationRequest){
 
         IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = getIamportResponse(
                 paymentVerificationRequest.getImpUid());
         com.siot.IamportRestClient.response.Payment iamportPayment = iamportResponse.getResponse();
 
+        User user = userRepository.getByEmail(email);
+
         if(iamportPayment.getAmount().equals(paymentVerificationRequest.getAmount())){
             Payment payment = paymentRepository.findByMerchantUid(paymentVerificationRequest.getMerchantUid())
                     .orElseThrow(()-> new RestApiException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+
+            if(!payment.getReservation().getUser().getId().equals(user.getId())){
+                throw new RestApiException(PaymentErrorCode.PAYMENT_VERIFY_NOT_MATCH_USER);
+            }
 
             payment.updateStatusToComplete(paymentVerificationRequest.getImpUid());
         }
@@ -79,10 +85,10 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     //결제 취소
     @Transactional
-    public PaymentCancelResponse cancelPayment(final Long userId, final Long reservationId){
+    public PaymentCancelResponse cancelPayment(final String email, final Long reservationId){
 
         Reservation reservation = getReservationById(reservationId);
-        User user = userRepository.getById(userId);
+        User user = userRepository.getByEmail(email);
 
         validateReservation(user,reservation);
         Payment payment = paymentRepository.findByReservationId(reservationId)
@@ -96,7 +102,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
     // 기존 결제 전 정보가 있다면 가지고 오고 그렇지 않다면 새로운 결제 반환
     private Payment getPayment(final Reservation reservation) {
 
-        return paymentRepository.findByReservationAndPaymentStatus(reservation,PaymentStatus.READY).orElseGet(()->{
+        return paymentRepository.findByReservationAndPaymentStatus(reservation, PaymentStatus.READY).orElseGet(()->{
             Payment newPayment = Payment.createPayment(UUID.randomUUID().toString(),
                                                        UUID.randomUUID().toString(),
                                                        PayMethod.CARD,
