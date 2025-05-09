@@ -52,7 +52,7 @@ class ReservationConcurrencyTest {
         int peopleCnt = 100;
         int entryLimit = 10;
 
-        User user = userRepository.save(UserFixture.createUser("manager@naver.com"));
+        User user = userRepository.save(UserFixture.createUser("manager@naver.com", "manager", "1111"));
         Competition competition = competitionRepository.save(
                 CompetitionFixture.createCompetition(user, CompetitionStatus.OPEN, entryLimit));
 
@@ -62,7 +62,7 @@ class ReservationConcurrencyTest {
         // when
         for (int i = 0; i < peopleCnt; i++) {
             final Long uid = (long) (i + 1);
-            User testUser = userRepository.save(UserFixture.createUser(uid + "@naver.com"));
+            User testUser = userRepository.save(UserFixture.createUser(uid + "@naver.com", uid.toString(), uid.toString()));
 
             executorService.execute(() -> {
                 try {
