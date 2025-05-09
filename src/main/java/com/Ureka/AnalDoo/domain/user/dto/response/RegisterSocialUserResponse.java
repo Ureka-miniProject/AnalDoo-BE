@@ -1,7 +1,7 @@
 package com.Ureka.AnalDoo.domain.user.dto.response;
 
-import com.Ureka.AnalDoo.domain.entity.SocialType;
 import com.Ureka.AnalDoo.domain.entity.User;
+import com.Ureka.AnalDoo.domain.entity.enums.SocialType;
 import lombok.Builder;
 import lombok.Getter;
 

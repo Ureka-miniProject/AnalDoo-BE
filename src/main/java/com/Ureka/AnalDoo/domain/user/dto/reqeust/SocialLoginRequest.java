@@ -1,6 +1,6 @@
 package com.Ureka.AnalDoo.domain.user.dto.reqeust;
 
-import com.Ureka.AnalDoo.domain.entity.SocialType;
+import com.Ureka.AnalDoo.domain.entity.enums.SocialType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

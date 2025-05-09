@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -51,7 +51,7 @@ public class UserController {
 
         authService.logout(email);
 
-        return "redirect:/";
+        return "/";
     }
 
     /**

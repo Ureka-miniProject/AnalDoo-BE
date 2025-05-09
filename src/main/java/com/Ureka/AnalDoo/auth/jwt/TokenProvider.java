@@ -18,8 +18,8 @@ public class TokenProvider {
 
     private final CustomUserDetailsService customUserDetailsService;
 
-    public TokenProvider(@Value("${spring.jwt.secret}") String secret,
-                         @Value("${spring.jwt.validationTime}") Long validationTime,
+    public TokenProvider(@Value("${spring.jwt.secret:@null}") String secret,
+                         @Value("${spring.jwt.validationTime:@null}") Long validationTime,
                          CustomUserDetailsService customUserDetailsService) {
         this.secret = secret;
         this.validationTime = validationTime * 1000;

@@ -1,6 +1,8 @@
 package com.Ureka.AnalDoo.domain.entity;
 
 import com.Ureka.AnalDoo.common.domain.TimeBaseEntity;
+import com.Ureka.AnalDoo.domain.entity.enums.PayMethod;
+import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -73,6 +75,10 @@ public class Payment extends TimeBaseEntity {
     public void updateStatusToComplete(final String impUid){
         this.paymentStatus = PaymentStatus.PAID;
         this.impUid = impUid;
+    }
+
+    public void updateStatusToCancel(){
+        this.paymentStatus = PaymentStatus.CANCEL;
     }
 
 }

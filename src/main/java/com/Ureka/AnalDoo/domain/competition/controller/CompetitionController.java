@@ -6,6 +6,8 @@ import com.Ureka.AnalDoo.domain.competition.service.CompetitionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +21,13 @@ public class CompetitionController {
 
     @PostMapping
     public ResponseEntity<CompetitionCreateResponse> createCompetition(@Valid @RequestBody CompetitionCreateRequest request) {
-        CompetitionCreateResponse response = competitionService.createCompetition(request);
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        System.out.println(email + " " + authentication.getName());
+        CompetitionCreateResponse response = competitionService.createCompetition(email, request);
         return ResponseEntity.ok(response);
     }
 

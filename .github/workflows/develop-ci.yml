@@ -21,6 +21,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Generate Envirvonment Variables File
+        run: |
+          echo "$ENV" >> .env
+        env:
+          ENV: ${{ secrets.ENV }}
+
       - name: Create test application.yml
         run: |
           rm -rf ./src/test/resources

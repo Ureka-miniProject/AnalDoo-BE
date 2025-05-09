@@ -1,7 +1,10 @@
 package com.Ureka.AnalDoo.domain.entity;
 
+import com.Ureka.AnalDoo.domain.entity.enums.Local;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 
 @Embeddable
@@ -9,7 +12,8 @@ import lombok.Getter;
 public class Address {
 
     @Column(name = "local")
-    private String local;
+    @Enumerated(value = EnumType.STRING)
+    private Local local;
     @Column(name = "street")
     private String street;
     @Column(name = "zipcode")
@@ -20,7 +24,7 @@ public class Address {
     protected Address() {
     }
 
-    public Address(String local, String street, String zipcode, String detail) {
+    public Address(Local local, String street, String zipcode, String detail) {
         this.local = local;
         this.street = street;
         this.zipcode = zipcode;

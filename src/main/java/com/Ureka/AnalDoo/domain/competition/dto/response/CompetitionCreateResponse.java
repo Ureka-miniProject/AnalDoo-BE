@@ -1,10 +1,8 @@
 package com.Ureka.AnalDoo.domain.competition.dto.response;
 
-import com.Ureka.AnalDoo.domain.entity.Address;
 import com.Ureka.AnalDoo.domain.entity.Competition;
-import com.Ureka.AnalDoo.domain.entity.CompetitionPeriod;
-import com.Ureka.AnalDoo.domain.entity.CompetitionStatus;
-import com.Ureka.AnalDoo.domain.entity.SportType;
+import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
+import com.Ureka.AnalDoo.domain.entity.enums.SportType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -42,7 +40,7 @@ public class CompetitionCreateResponse {
         this.entryCount = competition.getEntryCount();
         this.status = competition.getStatus();
         this.sportType = competition.getSportType();
-        this.local = competition.getAddress().getLocal();
+        this.local = competition.getAddress().getLocal().getName();
         this.street = competition.getAddress().getStreet();
         this.zipcode = competition.getAddress().getZipcode();
         this.detail = competition.getAddress().getDetail();

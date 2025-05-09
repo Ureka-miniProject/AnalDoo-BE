@@ -6,7 +6,7 @@ import com.Ureka.AnalDoo.domain.competition.dto.request.CompetitionCreateRequest
 import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionCreateResponse;
 import com.Ureka.AnalDoo.domain.competition.repository.CompetitionRepository;
 import com.Ureka.AnalDoo.domain.entity.Competition;
-import com.Ureka.AnalDoo.domain.entity.CompetitionStatus;
+import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
 import com.Ureka.AnalDoo.domain.entity.User;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +22,7 @@ public class CompetitionService {
 
     // competition 생성
     @Transactional
-    public CompetitionCreateResponse createCompetition(CompetitionCreateRequest request) {
-        String email = ""; // 사용자 가져오는 방식 미정
+    public CompetitionCreateResponse createCompetition(String email, CompetitionCreateRequest request) {
         User manager = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RestApiException(UserErrorCode.USER_NOT_FOUND));
 
