@@ -6,7 +6,7 @@ import com.Ureka.AnalDoo.domain.competition.dto.request.CompetitionCreateRequest
 import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionCreateResponse;
 import com.Ureka.AnalDoo.domain.competition.repository.CompetitionRepository;
 import com.Ureka.AnalDoo.domain.entity.Competition;
-import com.Ureka.AnalDoo.domain.entity.CompetitionStatus;
+import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
 import com.Ureka.AnalDoo.domain.entity.User;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

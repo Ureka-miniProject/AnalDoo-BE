@@ -3,11 +3,12 @@ package com.Ureka.AnalDoo.domain.payment.service;
 import com.Ureka.AnalDoo.common.exception.RestApiException;
 import com.Ureka.AnalDoo.common.exception.errorcode.PaymentErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
-import com.Ureka.AnalDoo.domain.entity.PayMethod;
+import com.Ureka.AnalDoo.domain.entity.enums.PayMethod;
 import com.Ureka.AnalDoo.domain.entity.Payment;
-import com.Ureka.AnalDoo.domain.entity.PaymentStatus;
+import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
+import com.Ureka.AnalDoo.domain.payment.dto.PaymentCancelResponse;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentPrepareInfoResponse;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationRequest;
 import com.Ureka.AnalDoo.domain.payment.repository.PaymentRepository;
@@ -15,12 +16,14 @@ import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
+import com.siot.IamportRestClient.request.CancelData;
 import com.siot.IamportRestClient.request.PrepareData;
 import com.siot.IamportRestClient.response.IamportResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PortOnePaymentServiceImpl implements PaymentService{
+
+
+    @Value("${portOne.channelKey:@null}")
+    private String channelKey;
 
     private final PaymentRepository paymentRepository;
     private final ReservationRepository reservationRepository;
@@ -47,7 +54,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
         Payment payment = getPayment(reservation);
         sendPrepareToPortOne(payment);
 
-        return PaymentPrepareInfoResponse.of(payment);
+        return PaymentPrepareInfoResponse.of(payment,channelKey);
     }
 
     // 결제 후 처리
@@ -68,6 +75,24 @@ public class PortOnePaymentServiceImpl implements PaymentService{
             throw new RestApiException(PaymentErrorCode.PAYMENT_PRICE_NOT_MATCH);
         }
     }
+
+
+    //결제 취소
+    @Transactional
+    public PaymentCancelResponse cancelPayment(final Long userId, final Long reservationId){
+
+        Reservation reservation = getReservationById(reservationId);
+        User user = userRepository.getById(userId);
+
+        validateReservation(user,reservation);
+        Payment payment = paymentRepository.findByReservationId(reservationId)
+                .orElseThrow(()->new RestApiException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+
+        com.siot.IamportRestClient.response.Payment paymentCancelResponse = cancelPayment(payment);
+
+        return PaymentCancelResponse.from(paymentCancelResponse);
+    }
+
     // 기존 결제 전 정보가 있다면 가지고 오고 그렇지 않다면 새로운 결제 반환
     private Payment getPayment(final Reservation reservation) {
 
@@ -83,7 +108,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     }
 
-    private Reservation getReservationById(Long reservationId) {
+    private Reservation getReservationById(final Long reservationId) {
         return reservationRepository.findById(reservationId).orElseThrow(() -> new RestApiException(
                 ReservationErrorCode.RESERVATION_NOT_FOUND));
     }
@@ -93,15 +118,20 @@ public class PortOnePaymentServiceImpl implements PaymentService{
     private void validatePayment(final User user,final Reservation reservation){
 
         // 현재 로그인한 주체가 예약 주체인지 확인
-        if(!reservation.getUser().getId().equals(user.getId())){
-            throw new RestApiException(ReservationErrorCode.RESERVATION_USER_NOT_MATCH);
-        }
+        validateReservation(user, reservation);
 
-        // 이미 결제 완료한 예약이라면 예외
-        if(paymentRepository.existsByReservationAndPaymentStatus(reservation,PaymentStatus.PAID)){
+        // 이미 결제 완료하거나 취소된 예약이라면 예외
+        if(paymentRepository.existsByReservationAndPaymentStatus(reservation,PaymentStatus.PAID) ||
+           paymentRepository.existsByReservationAndPaymentStatus(reservation,PaymentStatus.CANCEL)){
             throw new RestApiException(PaymentErrorCode.ALREADY_PROCEED_PAY);
         }
 
+    }
+
+    private void validateReservation(final User user, final Reservation reservation) {
+        if(!reservation.getUser().getId().equals(user.getId())){
+            throw new RestApiException(ReservationErrorCode.RESERVATION_USER_NOT_MATCH);
+        }
     }
 
     // portOne에 사전 처리 api 요청
@@ -125,6 +155,36 @@ public class PortOnePaymentServiceImpl implements PaymentService{
         } catch (IOException | IamportResponseException e) {
             throw new RestApiException(PaymentErrorCode.PG_ERROR);
         }
+    }
+
+
+    // 상태가 PAID가 아닌 경우 환불 불가
+    private com.siot.IamportRestClient.response.Payment cancelPayment(final Payment payment) {
+        if(payment.getPaymentStatus().equals(PaymentStatus.PAID)){
+            com.siot.IamportRestClient.response.Payment cancelData = getCancelData(payment);
+
+            // 변경 감지 시 .. 나중 생각
+            payment.updateStatusToCancel();
+
+            return cancelData;
+        }
+
+        throw new RestApiException(PaymentErrorCode.PAYMENT_NOT_PAID);
+    }
+
+
+    // 포트원에 전액 환불 요청
+    private com.siot.IamportRestClient.response.Payment getCancelData(final Payment payment){
+
+        try{
+            IamportResponse<com.siot.IamportRestClient.response.Payment> cancelResponse =
+                    iamportClient.cancelPaymentByImpUid(new CancelData(payment.getImpUid(),true));
+
+            return cancelResponse.getResponse();
+        }catch (IOException | IamportResponseException e) {
+            throw new RestApiException(PaymentErrorCode.PG_ERROR);
+        }
+
     }
 
 }
