@@ -21,12 +21,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Generate application.yml from ENV
+      - name: Generate Envirvonment Variables File
         run: |
-          mkdir -p ./src/main/resources
-          cat <<EOF > ./src/main/resources/application.yml
-          ${{ secrets.ENV }}
-          EOF
+          echo "$ENV" >> .env
+        env:
+          ENV: ${{ secrets.ENV }}
 
       - name: Create test application.yml
         run: |
