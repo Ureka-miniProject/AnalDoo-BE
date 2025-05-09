@@ -21,12 +21,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Generate Envirvonment Variables File
-        run: |
-          echo "$ENV" >> .env
-        env:
-          ENV: ${{ secrets.ENV }}
-
       - name: Create test application.yml
         run: |
           rm -rf ./src/test/resources
@@ -47,7 +41,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew build
+        run: ./gradlew clean build
 
       - name: Discord Alarm when fail
         uses: sarisia/actions-status-discord@v1
