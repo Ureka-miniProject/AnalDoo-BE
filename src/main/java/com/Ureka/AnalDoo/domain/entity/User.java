@@ -1,6 +1,7 @@
 package com.Ureka.AnalDoo.domain.entity;
 
 import com.Ureka.AnalDoo.common.domain.TimeBaseEntity;
+import com.Ureka.AnalDoo.domain.entity.enums.Role;
 import com.Ureka.AnalDoo.domain.entity.enums.SocialType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -22,29 +23,67 @@ public class User extends TimeBaseEntity {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "nickname", nullable = false)
+    @Column(name = "password", nullable = true)
+    private String password;
+
+    @Column(name = "nickname", nullable = true, unique = true)
     private String nickname;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "social_type", nullable = false)
     private SocialType socialType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
+
+    @Column(name = "social_id", nullable = true, unique = true)
+    private String socialId;
+
+    @Column(name = "refresh_token", nullable = true)
+    private String refreshToken;
+
     @Builder(access = AccessLevel.PRIVATE)
-    public User(String email, String nickname, SocialType socialType) {
+    private User(String email, String password, String nickname,
+                 String socialId, SocialType socialType,
+                 Role role, String refreshToken) {
         this.email = email;
+        this.password = password;
         this.nickname = nickname;
-        this.socialType = socialType;
+        this.socialId = socialId;
+        this.socialType = socialType != null ? socialType : SocialType.NONE;
+        this.role = role != null ? role : Role.PARTICIPANT;
+        this.refreshToken = refreshToken;
     }
 
-    public static User of(String email, String nickname, SocialType socialType) {
+    // 정적 생성자
+    public static User of(String email, String nickname, String socialId,
+                          SocialType socialType, Role role, String refreshToken) {
         return User.builder()
                 .email(email)
                 .nickname(nickname)
+                .socialId(socialId)
                 .socialType(socialType)
+                .role(role)
+                .refreshToken(refreshToken)
                 .build();
     }
 
-    public void changeNickName(String nickname) {
+    public void updateProfile(String nickname, String password) {
         this.nickname = nickname;
+        this.password = password;
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public void removeRefreshToken() {
+        this.refreshToken = null;
+    }
+
+    public User updateAndReturnPassword(String password) {
+        this.password = password;
+        return this;
     }
 }

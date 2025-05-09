@@ -22,8 +22,7 @@ public class CompetitionService {
 
     // competition 생성
     @Transactional
-    public CompetitionCreateResponse createCompetition(CompetitionCreateRequest request) {
-        String email = ""; // 사용자 가져오는 방식 미정
+    public CompetitionCreateResponse createCompetition(String email, CompetitionCreateRequest request) {
         User manager = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RestApiException(UserErrorCode.USER_NOT_FOUND));
 
