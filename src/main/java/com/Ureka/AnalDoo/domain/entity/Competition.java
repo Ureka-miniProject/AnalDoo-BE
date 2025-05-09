@@ -1,6 +1,8 @@
 package com.Ureka.AnalDoo.domain.entity;
 
 import com.Ureka.AnalDoo.common.domain.TimeBaseEntity;
+import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
+import com.Ureka.AnalDoo.domain.entity.enums.SportType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -36,6 +38,9 @@ public class Competition extends TimeBaseEntity {
 
     @Column(name = "entry_count", nullable = false)
     private int entryCount;
+
+    @Column(name = "current_entry_count", nullable = false)
+    private int currentEntryCount = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "competition_status", nullable = false, length = 10)
@@ -78,5 +83,13 @@ public class Competition extends TimeBaseEntity {
                 .sportType(sportType)
                 .address(address)
                 .build();
+    }
+
+    public void increaseEntryCount() {
+        this.currentEntryCount++;
+    }
+
+    public boolean isFull() {
+        return this.currentEntryCount >= this.entryCount;
     }
 }

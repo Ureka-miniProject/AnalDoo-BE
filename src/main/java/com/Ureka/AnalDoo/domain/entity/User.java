@@ -1,16 +1,12 @@
 package com.Ureka.AnalDoo.domain.entity;
 
 import com.Ureka.AnalDoo.common.domain.TimeBaseEntity;
+import com.Ureka.AnalDoo.domain.entity.enums.SocialType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.antlr.v4.runtime.misc.NotNull;
-import org.hibernate.annotations.NotFound;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "users")

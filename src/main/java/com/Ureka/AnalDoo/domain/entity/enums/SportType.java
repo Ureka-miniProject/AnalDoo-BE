@@ -1,4 +1,4 @@
-package com.Ureka.AnalDoo.domain.entity;
+package com.Ureka.AnalDoo.domain.entity.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

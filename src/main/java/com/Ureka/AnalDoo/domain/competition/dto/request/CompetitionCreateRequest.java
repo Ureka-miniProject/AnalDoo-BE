@@ -2,8 +2,8 @@ package com.Ureka.AnalDoo.domain.competition.dto.request;
 
 import com.Ureka.AnalDoo.domain.entity.Address;
 import com.Ureka.AnalDoo.domain.entity.CompetitionPeriod;
-import com.Ureka.AnalDoo.domain.entity.Local;
-import com.Ureka.AnalDoo.domain.entity.SportType;
+import com.Ureka.AnalDoo.domain.entity.enums.Local;
+import com.Ureka.AnalDoo.domain.entity.enums.SportType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Min;
