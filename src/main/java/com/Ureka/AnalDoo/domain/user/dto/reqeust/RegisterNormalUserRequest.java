@@ -1,8 +1,8 @@
 package com.Ureka.AnalDoo.domain.user.dto.reqeust;
 
-import com.Ureka.AnalDoo.domain.entity.Role;
-import com.Ureka.AnalDoo.domain.entity.SocialType;
+import com.Ureka.AnalDoo.domain.entity.enums.Role;
 import com.Ureka.AnalDoo.domain.entity.User;
+import com.Ureka.AnalDoo.domain.entity.enums.SocialType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

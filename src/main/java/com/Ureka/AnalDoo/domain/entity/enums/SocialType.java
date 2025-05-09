@@ -1,5 +1,5 @@
 package com.Ureka.AnalDoo.domain.entity.enums;
 
 public enum SocialType {
-    KAKAO, GOOGLE
+    KAKAO, GOOGLE, NONE
 }
