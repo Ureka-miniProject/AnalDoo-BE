@@ -1,15 +1,12 @@
 package com.Ureka.AnalDoo.domain.reservation.dto.response;
 
 import com.Ureka.AnalDoo.domain.entity.Reservation;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Builder
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@Builder(access = AccessLevel.PROTECTED)
 public class ReservationCreateResponse {
     private Long reservationId;
 
