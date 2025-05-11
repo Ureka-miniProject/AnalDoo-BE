@@ -53,6 +53,9 @@ public class Competition extends TimeBaseEntity {
     @Embedded
     private Address address;
 
+    @Column(name = "is_deleted",nullable = false)
+    private boolean isDeleted;
+
 
     @Builder(access = AccessLevel.PRIVATE)
     public Competition(User manager, String name, String content, CompetitionPeriod period,
@@ -67,6 +70,7 @@ public class Competition extends TimeBaseEntity {
         this.status = status;
         this.sportType = sportType;
         this.address = address;
+        isDeleted = false;
     }
 
     public static Competition of(User manager, String name, String content, CompetitionPeriod period,
@@ -98,5 +102,9 @@ public class Competition extends TimeBaseEntity {
 
     public boolean isFull() {
         return this.currentEntryCount >= this.entryCount;
+    }
+
+    public void delete(){
+        this.isDeleted = true;
     }
 }
