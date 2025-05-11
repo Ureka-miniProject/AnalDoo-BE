@@ -89,6 +89,13 @@ public class Competition extends TimeBaseEntity {
         this.currentEntryCount++;
     }
 
+    public void decreaseEntryCount(){
+        this.currentEntryCount--;
+        if(this.currentEntryCount<0){
+            this.currentEntryCount = 0;
+        }
+    }
+
     public boolean isFull() {
         return this.currentEntryCount >= this.entryCount;
     }
