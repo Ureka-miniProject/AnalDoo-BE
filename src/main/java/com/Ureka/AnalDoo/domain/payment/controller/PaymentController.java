@@ -1,6 +1,6 @@
 package com.Ureka.AnalDoo.domain.payment.controller;
 
-import com.Ureka.AnalDoo.domain.payment.dto.PaymentCancelResponse;
+
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentPrepareInfoResponse;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationRequest;
 import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
@@ -34,9 +34,10 @@ public class PaymentController {
         paymentService.verifyPayment(authentication.getName(),paymentVerificationDto);
     }
 
-    @PatchMapping ("/cancel/{reservationId}")
-    public ResponseEntity<PaymentCancelResponse> cancelPayment(Authentication authentication,@PathVariable("reservationId") Long reservationId){
-        return ResponseEntity.ok(paymentService.cancelPayment(authentication.getName(),reservationId));
-    }
+//    @PatchMapping ("/cancel/{reservationId}")
+//    public ResponseEntity<Void> cancelPayment(Authentication authentication,@PathVariable("reservationId") Long reservationId){
+//        paymentService.cancelPayment(authentication.getName(),reservationId)
+//        return ResponseEntity.ok();
+//    }
 
 }
