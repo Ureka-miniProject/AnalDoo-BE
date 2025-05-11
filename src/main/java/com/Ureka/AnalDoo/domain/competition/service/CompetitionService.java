@@ -15,6 +15,8 @@ import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
 import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
 import com.Ureka.AnalDoo.domain.reservation.service.ReservationService;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -74,6 +76,11 @@ public class CompetitionService {
     private void validateCompetitionRemove(User user,Competition competition){
         if(!competition.getManager().getId().equals(user.getId())){
             throw new RestApiException(CompetitionErrorCode.COMPETITION_USER_NOT_MATCH);
+        }
+
+
+        if(!competition.getPeriod().getCompetitionDate().isAfter(LocalDateTime.now().plusDays(7))){
+            throw new RestApiException(CompetitionErrorCode.COMPETITION_CANT_REMOVE);
         }
     }
 
