@@ -1,5 +1,7 @@
 package com.Ureka.AnalDoo.auth.config;
 
+import com.Ureka.AnalDoo.auth.handler.JwtAccessDeniedHandler;
+import com.Ureka.AnalDoo.auth.handler.JwtAuthenticationEntryPointHandler;
 import com.Ureka.AnalDoo.auth.jwt.JWTFilter;
 import com.Ureka.AnalDoo.auth.jwt.JWTUtil;
 import com.Ureka.AnalDoo.auth.jwt.LoginFilter;
@@ -26,6 +28,8 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtAuthenticationEntryPointHandler authenticationEntryPointHandler;
+    private final JwtAccessDeniedHandler accessDeniedHandler;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
 
@@ -58,8 +62,6 @@ public class SecurityConfig {
                                 configuration.setAllowCredentials(true);
                                 configuration.setAllowedHeaders(Collections.singletonList("*"));
                                 configuration.setMaxAge(3600L);
-
-
                                 return configuration;
                             }
                         })
@@ -76,11 +78,20 @@ public class SecurityConfig {
         //http basic 인증 방식 disable
         http
                 .httpBasic((auth) -> auth.disable());
+        http
+                .exceptionHandling((exception)
+                        -> exception.authenticationEntryPoint(authenticationEntryPointHandler));
+        http
+                .exceptionHandling((exception)
+                        -> exception.accessDeniedHandler(accessDeniedHandler));
 
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("api/v1/users/**", "/").permitAll()
+                        .requestMatchers("/api/v1/users/login",
+                                "/api/v1/users/signup",
+                                "/api/v1/users/reissue",
+                                "/").permitAll()
                         .anyRequest().authenticated()
                 );
         //JWTFilter 등록

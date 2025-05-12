@@ -38,11 +38,11 @@ public class AuthService {
     // 토큰 생성 및 RefreshToken 저장
     @Transactional
     public TokenResponse generateTokensAndSave(User user) {
-        long accessTokenValidityMs = 1000 * 60 * 30; // 30분
-        long refreshTokenValidityMs = 1000L * 60 * 60 * 24 * 7; // 7일
+        long accessTokenValidityMs = 1000L * 10; // 30분
+        long refreshTokenValidityMs = 1000L * 60 * 60 * 7; // 7일
 
         String accessToken = jwtUtil.createAccessToken(user.getEmail(), user.getRole().name(), accessTokenValidityMs);
-        String refreshToken = jwtUtil.createRefreshToken(refreshTokenValidityMs);
+        String refreshToken = jwtUtil.createRefreshToken(user.getEmail(),refreshTokenValidityMs);
 
         // 기존 refreshToken 덮어쓰기
         user.updateRefreshToken(refreshToken);
@@ -67,11 +67,13 @@ public class AuthService {
 
     // RefreshToken 검증 후 AccessToken 재발급
     @Transactional
-    public TokenResponse reissue(String refreshToken, String email) {
+    public TokenResponse reissue(String refreshToken) {
         // 토큰 만료 여부 확인
         if (jwtUtil.isExpired(refreshToken)) {
             throw new RestApiException(UserErrorCode.REFRESH_TOKEN_NOT_MATCH);
         }
+
+        String email = jwtUtil.getUserEmail(refreshToken);
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RestApiException(UserErrorCode.USER_NOT_FOUND));

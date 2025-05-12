@@ -15,11 +15,17 @@ public enum UserErrorCode implements ErrorCode {
     PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "비밀번호를 다시 확인해주세요"),
     ACCESS_TOKEN_NOT_MATCH(HttpStatus.BAD_REQUEST, "Access Token을 다시 확인해주세요"),
     REFRESH_TOKEN_NOT_MATCH(HttpStatus.BAD_REQUEST, "Refresh Token을 다시 확인해주세요"),
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다"),
+    /**
+     * 401 Unauthorized
+     */
+    ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Access Token이 만료되었습니다."),
+    REFRESH_TOKEN_NOT_EXIST(HttpStatus.UNAUTHORIZED, "Refresh Token이 존재하지 않습니다."),
+    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Refresh Token이 만료되었습니다."),
+
     /**
      * 404 Not Found
      */
-
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다"),
     /**
      *  409 Conflict Error
      */

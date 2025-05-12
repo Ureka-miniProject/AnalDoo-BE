@@ -69,8 +69,11 @@ public class User extends TimeBaseEntity {
                 .build();
     }
 
-    public void updateProfile(String nickname, String password) {
+    public void updateNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void updatePassword(String password) {
         this.password = password;
     }
 

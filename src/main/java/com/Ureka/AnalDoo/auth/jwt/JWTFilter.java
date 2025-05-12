@@ -3,6 +3,7 @@ package com.Ureka.AnalDoo.auth.jwt;
 import com.Ureka.AnalDoo.auth.service.CustomUserDetails;
 import com.Ureka.AnalDoo.common.exception.RestApiException;
 import com.Ureka.AnalDoo.common.exception.errorcode.CommonErrorCode;
+import com.Ureka.AnalDoo.common.exception.errorcode.UserErrorCode;
 import com.Ureka.AnalDoo.domain.entity.User;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -13,11 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
 
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
@@ -32,7 +31,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        // 1. Authorization 헤더 확인
+        // 1. Authorization 헤더 존재 및 Bearer 형식 확인
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -41,23 +40,32 @@ public class JWTFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7); // "Bearer " 제거
 
         // 2. 만료 검사
-        if (jwtUtil.isExpired(token)) {
-            throw new RestApiException(CommonErrorCode.EXPIRED_TOKEN);
+        // ✅ reissue 요청은 토큰 만료여도 통과
+        if (request.getRequestURI().equals("/api/v1/users/reissue")) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        // 3. 이메일 추출 및 검증
+        // ❗️만료된 토큰이면 명시적으로 401 보내기
+        if (jwtUtil.isExpired(token)) {
+            SecurityContextHolder.clearContext();
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access token expired");
+            return;
+        }
+
+        // 3. 이메일 추출 및 유효성 검사
         String email;
         try {
             email = jwtUtil.getUserEmail(token);
         } catch (Exception e) {
-            throw new RestApiException(CommonErrorCode.INVALID_TOKEN);
+            throw new RestApiException(UserErrorCode.ACCESS_TOKEN_NOT_MATCH);
         }
 
-        // 4. 사용자 조회
+        // 4. 사용자 정보 조회
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RestApiException(CommonErrorCode.INVALID_TOKEN));
+                .orElseThrow(() -> new RestApiException(UserErrorCode.USER_NOT_FOUND));
 
-        // 5. 이미 인증된 경우 방지 (중복 설정 막기)
+        // 5. 인증 정보가 SecurityContext에 없다면 등록
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             CustomUserDetails userDetails = CustomUserDetails.fromEntity(user);
 
@@ -70,6 +78,7 @@ public class JWTFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
+        // 6. 다음 필터로 전달
         filterChain.doFilter(request, response);
     }
 }
