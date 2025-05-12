@@ -86,13 +86,9 @@ public class PortOnePaymentServiceImpl implements PaymentService{
     @Transactional
     public void cancelPayment(final Reservation reservation){
 
-        if(paymentRepository.existsByReservationAndPaymentStatus(reservation,PaymentStatus.PAID)){
-            Payment payment = paymentRepository.findByReservationId(reservation.getId())
-                    .orElseThrow(()->new RestApiException(PaymentErrorCode.PAYMENT_NOT_FOUND));
-
+        paymentRepository.findByReservationAndPaymentStatus(reservation,PaymentStatus.PAID).ifPresent(payment -> {
             cancelPaymentWithPortOne(payment);
-        }
-
+        });
     }
 
     // 기존 결제 전 정보가 있다면 가지고 오고 그렇지 않다면 새로운 결제 반환
