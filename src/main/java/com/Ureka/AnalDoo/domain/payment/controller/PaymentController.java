@@ -34,10 +34,4 @@ public class PaymentController {
         paymentService.verifyPayment(authentication.getName(),paymentVerificationDto);
     }
 
-//    @PatchMapping ("/cancel/{reservationId}")
-//    public ResponseEntity<Void> cancelPayment(Authentication authentication,@PathVariable("reservationId") Long reservationId){
-//        paymentService.cancelPayment(authentication.getName(),reservationId)
-//        return ResponseEntity.ok();
-//    }
-
 }
