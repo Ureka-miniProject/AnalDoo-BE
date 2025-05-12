@@ -5,9 +5,13 @@ import com.Ureka.AnalDoo.common.exception.errorcode.CompetitionErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
 import com.Ureka.AnalDoo.domain.competition.repository.CompetitionRepository;
 import com.Ureka.AnalDoo.domain.entity.Competition;
+import com.Ureka.AnalDoo.domain.entity.Payment;
 import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
+import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
+import com.Ureka.AnalDoo.domain.payment.repository.PaymentRepository;
+import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
 import com.Ureka.AnalDoo.domain.reservation.dto.request.ReservationCreateRequest;
 import com.Ureka.AnalDoo.domain.reservation.dto.response.ReservationCreateResponse;
 import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
@@ -25,6 +29,8 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final CompetitionRepository competitionRepository;
+    private final PaymentService paymentService;
+
 
     @Transactional
     @Override
@@ -54,5 +60,30 @@ public class ReservationServiceImpl implements ReservationService {
         }
     }
 
+    @Transactional
+    @Override
+    public void delete(Long reservationId, String email) {
 
+        User user = userRepository.getByEmail(email);
+        Reservation reservation = reservationRepository.getById(reservationId);
+
+        validateReservationRemove(reservation,user);
+
+        reservation.delete();
+
+        Competition competition = competitionRepository.findByIdWithLock(reservation.getCompetition().getId())
+                .orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
+        competition.decreaseEntryCount();
+
+        paymentService.cancelPayment(reservation);
+
+    }
+
+    private void validateReservationRemove(final Reservation reservation,final User user){
+
+        if(!reservation.getUser().getId().equals(user.getId())){
+            throw new RestApiException(ReservationErrorCode.RESERVATION_USER_NOT_MATCH);
+        }
+
+    }
 }
