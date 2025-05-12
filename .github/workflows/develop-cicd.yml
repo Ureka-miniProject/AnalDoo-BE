@@ -1,0 +1,108 @@
+name: Develop CI/CD
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+  push:
+    branches: [ "develop" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Create test application.yml
+        run: |
+          rm -rf ./src/test/resources
+          mkdir -p ./src/test/resources
+          echo "${{ secrets.APPLICATION_TEST }}" > ./src/test/resources/application.yml
+
+      - name: Create main application.yml
+        run: |
+          rm -rf ./src/main/resources
+          mkdir -p ./src/main/resources
+          echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
+
+      - name: Gradle Caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle Wrapper
+        run: ./gradlew clean build
+
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag ${{ secrets.DOCKER_USERNAME }}/analdoo:latest
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Push the Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/analdoo:latest
+
+      - name: Discord Alarm when build fails
+        if: failure()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_BE_WEB_HOOK_URL }}
+          title: "❗️Backend CI failed ❗️"
+          color: 0xff0000
+          username: Github Actions
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy to AWS EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          port: 22
+          script: |
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_HUB_TOKEN }}
+            docker pull ${{ secrets.DOCKER_USERNAME }}/analdoo:latest
+            docker stop analdoo_server || true
+            docker rm analdoo_server || true
+            docker run -d --name analdoo_server -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/analdoo:latest
+
+      - name: Discord Alarm when CD fails
+        if: failure()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_BE_WEB_HOOK_URL }}
+          title: "❗️Backend CD failed ❗️"
+          color: 0xff0000
+          username: Github Actions
+
+      - name: Discord Alarm when CD succeeds
+        if: success()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_BE_WEB_HOOK_URL }}
+          title: "✅ Backend CD success ✅"
+          color: 0x00ff00
+          username: Github Actions
