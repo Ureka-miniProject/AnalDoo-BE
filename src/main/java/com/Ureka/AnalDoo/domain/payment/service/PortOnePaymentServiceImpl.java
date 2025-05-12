@@ -157,16 +157,11 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     // 상태가 PAID가 아닌 경우 환불 불가
     private void cancelPaymentWithPortOne(final Payment payment) {
-        if(payment.getPaymentStatus().equals(PaymentStatus.PAID)){
-            com.siot.IamportRestClient.response.Payment cancelData = getPortOneCancelData(payment);
 
-            // 변경 감지 시 .. 나중 생각
-            payment.updateStatusToCancel();
-            return;
+        com.siot.IamportRestClient.response.Payment cancelData = getPortOneCancelData(payment);
+        // 변경 감지 시 .. 나중 생각
+        payment.updateStatusToCancel();
 
-        }
-
-        throw new RestApiException(PaymentErrorCode.PAYMENT_NOT_PAID);
     }
 
 
