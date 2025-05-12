@@ -5,4 +5,6 @@ import com.Ureka.AnalDoo.domain.reservation.dto.response.ReservationCreateRespon
 
 public interface ReservationService {
     ReservationCreateResponse create(ReservationCreateRequest request, Long userId);
+
+    void delete(Long reservationId,String email);
 }

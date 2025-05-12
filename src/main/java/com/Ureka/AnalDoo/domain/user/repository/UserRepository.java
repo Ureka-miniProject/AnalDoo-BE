@@ -18,6 +18,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
         return findById(id).orElseThrow(()->new RestApiException(UserErrorCode.USER_NOT_FOUND));
     }
 
+    default User getByEmail(String email){
+        return findByEmail(email).orElseThrow(()-> new RestApiException(UserErrorCode.USER_NOT_FOUND));
+    }
+
     Optional<User> findByEmail(String email);
     Optional<User> findByNickname(String nickname);
 

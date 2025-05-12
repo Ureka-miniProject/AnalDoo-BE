@@ -1,14 +1,23 @@
 package com.Ureka.AnalDoo.domain.competition.service;
 
 import com.Ureka.AnalDoo.common.exception.RestApiException;
+import com.Ureka.AnalDoo.common.exception.errorcode.CompetitionErrorCode;
+import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.UserErrorCode;
 import com.Ureka.AnalDoo.domain.competition.dto.request.CompetitionCreateRequest;
 import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionCreateResponse;
 import com.Ureka.AnalDoo.domain.competition.repository.CompetitionRepository;
 import com.Ureka.AnalDoo.domain.entity.Competition;
+import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
 import com.Ureka.AnalDoo.domain.entity.User;
+import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
+import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
+import com.Ureka.AnalDoo.domain.reservation.service.ReservationService;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +28,8 @@ public class CompetitionService {
 
     private final CompetitionRepository competitionRepository;
     private final UserRepository userRepository;
+    private final PaymentService paymentService;
+    private final ReservationRepository reservationRepository;
 
     // competition 생성
     @Transactional
@@ -42,6 +53,35 @@ public class CompetitionService {
 
         return new CompetitionCreateResponse(savedCompetition);
 
+    }
+
+    @Transactional
+    public void deleteCompetition(String email,Long competitionId){
+
+        Competition competition = competitionRepository.getById(competitionId);
+        User user = userRepository.getByEmail(email);
+
+        validateCompetitionRemove(user,competition);
+
+        competition.delete();
+
+        reservationRepository.findByCompetitionId(competitionId).forEach(reservation -> {
+
+                    reservation.delete();
+                    paymentService.cancelPayment(reservation);
+                });
+
+    }
+
+    private void validateCompetitionRemove(User user,Competition competition){
+        if(!competition.getManager().getId().equals(user.getId())){
+            throw new RestApiException(CompetitionErrorCode.COMPETITION_USER_NOT_MATCH);
+        }
+
+
+        if(!competition.getPeriod().getCompetitionDate().isAfter(LocalDateTime.now().plusDays(7))){
+            throw new RestApiException(CompetitionErrorCode.COMPETITION_CANT_REMOVE);
+        }
     }
 
 
