@@ -70,7 +70,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
             Payment payment = paymentRepository.findByMerchantUid(paymentVerificationRequest.getMerchantUid())
                     .orElseThrow(()-> new RestApiException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
-            if(payment.getReservation().getUser().getId().equals(user.getId())){
+            if(!payment.getReservation().getUser().getId().equals(user.getId())){
                 throw new RestApiException(PaymentErrorCode.PAYMENT_VERIFY_NOT_MATCH_USER);
             }
 
