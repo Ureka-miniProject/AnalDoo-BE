@@ -122,7 +122,7 @@ public class PortOnePaymentServiceImpl implements PaymentService{
     }
 
     private void validateReservation(final User user, final Reservation reservation) {
-        if(reservation.getUser().getId().equals(user.getId())){
+        if(!reservation.getUser().getId().equals(user.getId())){
             throw new RestApiException(ReservationErrorCode.RESERVATION_USER_NOT_MATCH);
         }
     }
