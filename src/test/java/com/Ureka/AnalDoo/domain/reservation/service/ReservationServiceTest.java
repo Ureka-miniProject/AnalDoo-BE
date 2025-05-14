@@ -12,11 +12,14 @@ import com.Ureka.AnalDoo.domain.entity.Competition;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
 import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
+import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
+import com.Ureka.AnalDoo.domain.payment.repository.PaymentRepository;
 import com.Ureka.AnalDoo.domain.reservation.dto.request.ReservationCreateRequest;
 import com.Ureka.AnalDoo.domain.reservation.dto.response.ReservationCreateResponse;
 import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import com.Ureka.AnalDoo.fixture.CompetitionFixture;
+import com.Ureka.AnalDoo.fixture.PaymentFixture;
 import com.Ureka.AnalDoo.fixture.ReservationFixture;
 import com.Ureka.AnalDoo.fixture.UserFixture;
 import java.util.Optional;
@@ -36,6 +39,8 @@ class ReservationServiceTest {
     private UserRepository userRepository;
     @Mock
     private CompetitionRepository competitionRepository;
+    @Mock
+    private PaymentRepository paymentRepository;
 
     @InjectMocks
     private ReservationServiceImpl reservationService;
@@ -44,11 +49,12 @@ class ReservationServiceTest {
     @DisplayName("정상적인 대회 예약 요청은 성공적으로 처리된다")
     void should_reserve_successfully_when_competition_is_open_and_valid() {
         // given
-        String userEmail = "1@naver.com";
+        String userEmail = "2@naver.com";
         Long competitionId = 1L;
 
-        User user = UserFixture.createUser("1@naver.com", "user1", "1111");
-        Competition competition = CompetitionFixture.createCompetitionWithId(competitionId, user,
+        User host = UserFixture.createUserWithId(1L, "1@naver.com", "user1", "1111");
+        User user = UserFixture.createUserWithId(2L, "2@naver.com", "user2", "2222");
+        Competition competition = CompetitionFixture.createCompetitionWithId(competitionId, host,
                 CompetitionStatus.OPEN, 10);
         Reservation reservation = ReservationFixture.createReservation(user, competition);
         ReservationCreateRequest request = new ReservationCreateRequest(competitionId);
@@ -68,11 +74,12 @@ class ReservationServiceTest {
     @DisplayName("모집 상태가 CLOSED인 경우 예약은 실패한다")
     void should_fail_reservation_when_competition_status_is_closed() {
         // given
-        String userEmail = "1@naver.com";
+        String userEmail = "2@naver.com";
         Long competitionId = 1L;
 
-        User user = UserFixture.createUser("1@naver.com", "user1", "1111");
-        Competition closedCompetition = CompetitionFixture.createCompetitionWithId(competitionId, user,
+        User host = UserFixture.createUserWithId(1L, "1@naver.com", "user1", "1111");
+        User user = UserFixture.createUserWithId(2L, "2@naver.com", "user2", "2222");
+        Competition closedCompetition = CompetitionFixture.createCompetitionWithId(competitionId, host,
                 CompetitionStatus.CLOSED, 10);
         ReservationCreateRequest request = new ReservationCreateRequest(competitionId);
 
@@ -89,11 +96,12 @@ class ReservationServiceTest {
     @DisplayName("모집 기간이 지난 대회는 예약이 불가능하다")
     void should_fail_reservation_when_competition_end_date_has_passed() {
         // given
-        String userEmail = "1@naver.com";
+        String userEmail = "2@naver.com";
         Long competitionId = 1L;
 
-        User user = UserFixture.createUser("1@naver.com", "user1", "1111");
-        Competition expiredCompetition = CompetitionFixture.createExpiredCompetition(competitionId, user);
+        User host = UserFixture.createUserWithId(1L, "1@naver.com", "user1", "1111");
+        User user = UserFixture.createUserWithId(2L, "2@naver.com", "user2", "2222");
+        Competition expiredCompetition = CompetitionFixture.createExpiredCompetition(competitionId, host);
         ReservationCreateRequest request = new ReservationCreateRequest(competitionId);
 
         given(userRepository.getByEmail(userEmail)).willReturn(user);
@@ -103,5 +111,74 @@ class ReservationServiceTest {
         assertThatThrownBy(() -> reservationService.create(request, user.getEmail()))
                 .isInstanceOf(RestApiException.class)
                 .hasFieldOrPropertyWithValue("errorCode", ReservationErrorCode.RESERVATION_CLOSED);
+    }
+
+    @Test
+    @DisplayName("내가 주최한 대회는 예약이 불가능하다")
+    void should_fail_reservation_when_user_is_competition_host() {
+        // given
+        String userEmail = "1@naver.com";
+        Long competitionId = 1L;
+
+        User host = UserFixture.createUserWithId(1L, userEmail, "user1", "1111");
+        Competition competition = CompetitionFixture.createCompetitionWithId(competitionId, host,
+                CompetitionStatus.OPEN, 10);
+        ReservationCreateRequest request = new ReservationCreateRequest(competitionId);
+
+        given(userRepository.getByEmail(userEmail)).willReturn(host);
+        given(competitionRepository.findByIdWithLock(competitionId)).willReturn(Optional.of(competition));
+
+        // when & then
+        assertThatThrownBy(() -> reservationService.create(request, host.getEmail()))
+                .isInstanceOf(RestApiException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ReservationErrorCode.RESERVATION_HOST_NOT_ALLOWED);
+    }
+
+    @Test
+    @DisplayName("모집 인원이 꽉 찬 대회는 예약할 수 없다")
+    void should_fail_reservation_when_competition_is_full() {
+        // given
+        String userEmail = "2@naver.com";
+        Long competitionId = 1L;
+
+        User host = UserFixture.createUserWithId(1L, "1@naver.com", "user1", "1111");
+        User user = UserFixture.createUserWithId(2L, "2@naver.com", "user2", "2222");
+        Competition competition = CompetitionFixture.createCompetitionWithEntryCount(competitionId, host, 10, 10); // 정원:10, 현재:10
+        ReservationCreateRequest request = new ReservationCreateRequest(competitionId);
+
+        given(userRepository.getByEmail(userEmail)).willReturn(user);
+        given(competitionRepository.findByIdWithLock(competitionId)).willReturn(Optional.of(competition));
+
+        // when & then
+        assertThatThrownBy(() -> reservationService.create(request, user.getEmail()))
+                .isInstanceOf(RestApiException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ReservationErrorCode.RESERVATION_FULL);
+    }
+
+
+    @Test
+    @DisplayName("이미 결제 완료된 예약이 존재하면 예약은 불가능하다")
+    void should_fail_reservation_when_paid_reservation_exists() {
+        // given
+        String userEmail = "2@naver.com";
+        Long competitionId = 1L;
+
+        User host = UserFixture.createUserWithId(1L, "1@naver.com", "user1", "1111");
+        User user = UserFixture.createUserWithId(2L, "2@naver.com", "user2", "2222");
+        Competition competition = CompetitionFixture.createCompetitionWithId(competitionId, host,
+                CompetitionStatus.OPEN, 10);
+        Reservation reservation = ReservationFixture.createReservation(user, competition);
+        ReservationCreateRequest request = new ReservationCreateRequest(competitionId);
+
+        given(userRepository.getByEmail(userEmail)).willReturn(user);
+        given(competitionRepository.findByIdWithLock(competitionId)).willReturn(Optional.of(competition));
+        given(reservationRepository.findByUserAndCompetition(user, competition)).willReturn(Optional.of(reservation));
+        given(paymentRepository.findByReservationId(reservation.getId()))
+                .willReturn(Optional.of(PaymentFixture.createPayment(reservation, PaymentStatus.PAID)));
+
+        // when & then
+        assertThatThrownBy(() -> reservationService.create(request, user.getEmail()))
+                .isInstanceOf(RestApiException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ReservationErrorCode.RESERVATION_ALREADY_EXISTS);
     }
 }

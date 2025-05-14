@@ -33,6 +33,12 @@ public class CompetitionFixture {
         return competition;
     }
 
+    public static Competition createCompetitionWithEntryCount(Long id, User manager, int entryLimit, int currentEntryCount) {
+        Competition competition = createCompetitionWithId(id, manager, CompetitionStatus.OPEN, entryLimit);
+        ReflectionTestUtils.setField(competition, "currentEntryCount", currentEntryCount);
+        return competition;
+    }
+
     public static Competition createExpiredCompetition(Long competitionId, User manager) {
         Competition competition = Competition.of(
                 manager,
