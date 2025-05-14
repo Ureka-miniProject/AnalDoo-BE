@@ -14,6 +14,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("*") // cors를 허용할 method + DELETE 추가
                 .allowedHeaders("*")
                 .exposedHeaders("*")
-                .allowCredentials(true);
+                .allowCredentials(false);
     }
 }
