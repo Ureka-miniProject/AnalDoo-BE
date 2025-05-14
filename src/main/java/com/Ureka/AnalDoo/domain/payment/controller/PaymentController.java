@@ -3,7 +3,7 @@ package com.Ureka.AnalDoo.domain.payment.controller;
 
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentPrepareInfoResponse;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationRequest;
-import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
+import com.Ureka.AnalDoo.domain.payment.service.PaymentFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,17 +21,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    private final PaymentFacade paymentFacade;
 
     @PostMapping("/prepare/{reservationId}")
     public ResponseEntity<PaymentPrepareInfoResponse> paymentReady(Authentication authentication,@PathVariable("reservationId") Long reservationId){
-        return ResponseEntity.ok(paymentService.preparePayment(authentication.getName(),reservationId));
+        return ResponseEntity.ok(paymentFacade.preparePayment(authentication.getName(),reservationId));
     }
 
     @PostMapping("/verify")
     public void paymentVerify(Authentication authentication,@RequestBody @Valid PaymentVerificationRequest paymentVerificationDto){
 
-        paymentService.verifyPayment(authentication.getName(),paymentVerificationDto);
+        paymentFacade.verifyPayment(authentication.getName(),paymentVerificationDto);
     }
 
 }

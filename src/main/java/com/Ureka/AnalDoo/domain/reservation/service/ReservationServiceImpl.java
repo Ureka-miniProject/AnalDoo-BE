@@ -11,7 +11,7 @@ import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
 import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
 import com.Ureka.AnalDoo.domain.payment.repository.PaymentRepository;
-import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
+import com.Ureka.AnalDoo.domain.payment.service.PaymentFacade;
 import com.Ureka.AnalDoo.domain.reservation.dto.request.ReservationCreateRequest;
 import com.Ureka.AnalDoo.domain.reservation.dto.response.ReservationCreateResponse;
 import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
@@ -29,7 +29,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final CompetitionRepository competitionRepository;
-    private final PaymentService paymentService;
+    private final PaymentFacade paymentFacade;
 
 
     @Transactional
@@ -75,7 +75,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
         competition.decreaseEntryCount();
 
-        paymentService.cancelPayment(reservation);
+        paymentFacade.cancelPayment(reservation);
 
     }
 
