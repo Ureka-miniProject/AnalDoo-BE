@@ -9,7 +9,7 @@ import java.util.List;
 public interface ReservationService {
     ReservationCreateResponse create(ReservationCreateRequest request, String email);
 
-    List<MyJoinedCompetitionResponse> getMyJoinedCompetitions(Long userId, boolean isDeleted);
+    List<MyJoinedCompetitionResponse> getMyJoinedCompetitions(Long userId);
 
     void delete(Long reservationId,String email);
 }

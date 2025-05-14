@@ -126,27 +126,24 @@ public class UserController {
 
     @GetMapping("/my-created")
     public ResponseEntity<List<MyCreatedCompetitionResponse>> getMyCreatedCompetitions(
-            Authentication authentication,
-            @RequestParam(defaultValue = "false") boolean includeDeleted
+            Authentication authentication
     ) {
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
 
-        User user = userRepository.findById(userDetails.getId()).orElseThrow(() -> new RestApiException(UserErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RestApiException(UserErrorCode.USER_NOT_FOUND));
 
         List<MyCreatedCompetitionResponse> responses =
-                competitionService.getMyCreatedCompetitions(user, includeDeleted);
+                competitionService.getMyCreatedCompetitions(user);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/my-joined")
     public ResponseEntity<List<MyJoinedCompetitionResponse>> getMyJoinedCompetitions(
-            Authentication authentication,
-            @RequestParam(defaultValue = "false") boolean includeDeleted
+            Authentication authentication
     ) {
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Long userId = userDetails.getId();
+        Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
 
-        List<MyJoinedCompetitionResponse> responses = reservationService.getMyJoinedCompetitions(userId, includeDeleted);
+        List<MyJoinedCompetitionResponse> responses = reservationService.getMyJoinedCompetitions(userId);
 
         return ResponseEntity.ok(responses);
     }

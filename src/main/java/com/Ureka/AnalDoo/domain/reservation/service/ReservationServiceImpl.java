@@ -51,8 +51,8 @@ public class ReservationServiceImpl implements ReservationService {
         return ReservationCreateResponse.from(savedReservation);
     }
 
-    public List<MyJoinedCompetitionResponse> getMyJoinedCompetitions(Long userId, boolean isDeleted) {
-        List<Reservation> reservations = reservationRepository.findAllByUserIdAndIsDeleted(userId, isDeleted);
+    public List<MyJoinedCompetitionResponse> getMyJoinedCompetitions(Long userId) {
+        List<Reservation> reservations = reservationRepository.findAllWithCompetitionByUserIdAndIsDeleted(userId);
 
         if (reservations.isEmpty()) {
             throw new RestApiException(CompetitionErrorCode.COMPETITION_JOIN_LIST_EMPTY);

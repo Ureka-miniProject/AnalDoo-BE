@@ -85,8 +85,8 @@ public class CompetitionService {
         }
     }
 
-    public List<MyCreatedCompetitionResponse> getMyCreatedCompetitions(User user, boolean isDeleted){
-        List<Competition> competitions = competitionRepository.findAllByManagerAndIsDeleted(user, isDeleted);
+    public List<MyCreatedCompetitionResponse> getMyCreatedCompetitions(User user){
+        List<Competition> competitions = competitionRepository.findAllByManagerAndIsDeleted(user);
 
         if(competitions.isEmpty()){
             throw new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND);
