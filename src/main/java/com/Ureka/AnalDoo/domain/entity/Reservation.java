@@ -27,10 +27,14 @@ public class Reservation extends TimeBaseEntity {
     @JoinColumn(name = "competition_id", nullable = false)
     private Competition competition;
 
+    @Column(name = "is_deleted",nullable = false)
+    private boolean isDeleted;
+
     @Builder(access = AccessLevel.PRIVATE)
     public Reservation(User user, Competition competition) {
         this.user = user;
         this.competition = competition;
+        this.isDeleted = false;
     }
 
     public static Reservation of(User user, Competition competition) {
@@ -38,5 +42,9 @@ public class Reservation extends TimeBaseEntity {
                 .user(user)
                 .competition(competition)
                 .build();
+    }
+
+    public void delete(){
+        this.isDeleted = true;
     }
 }

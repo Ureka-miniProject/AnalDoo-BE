@@ -3,12 +3,11 @@ package com.Ureka.AnalDoo.domain.payment.service;
 import com.Ureka.AnalDoo.common.exception.RestApiException;
 import com.Ureka.AnalDoo.common.exception.errorcode.PaymentErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
-import com.Ureka.AnalDoo.domain.entity.enums.PayMethod;
 import com.Ureka.AnalDoo.domain.entity.Payment;
-import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
-import com.Ureka.AnalDoo.domain.payment.dto.PaymentCancelResponse;
+import com.Ureka.AnalDoo.domain.entity.enums.PayMethod;
+import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentPrepareInfoResponse;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationRequest;
 import com.Ureka.AnalDoo.domain.payment.repository.PaymentRepository;
@@ -44,10 +43,10 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     // 결제 전 처리
     @Transactional
-    public PaymentPrepareInfoResponse preparePayment(final Long userId,final Long reservationId){
+    public PaymentPrepareInfoResponse preparePayment(final String email,final Long reservationId){
 
-        Reservation reservation = getReservationById(reservationId);
-        User user = userRepository.getById(userId);
+        Reservation reservation = reservationRepository.getById(reservationId);
+        User user = userRepository.getByEmail(email);
 
         validatePayment(user,reservation);
 
@@ -59,15 +58,21 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     // 결제 후 처리
     @Transactional
-    public void verifyPayment(final PaymentVerificationRequest paymentVerificationRequest){
+    public void verifyPayment(final String email,final PaymentVerificationRequest paymentVerificationRequest){
 
         IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = getIamportResponse(
                 paymentVerificationRequest.getImpUid());
         com.siot.IamportRestClient.response.Payment iamportPayment = iamportResponse.getResponse();
 
+        User user = userRepository.getByEmail(email);
+
         if(iamportPayment.getAmount().equals(paymentVerificationRequest.getAmount())){
             Payment payment = paymentRepository.findByMerchantUid(paymentVerificationRequest.getMerchantUid())
                     .orElseThrow(()-> new RestApiException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+
+            if(!payment.getReservation().getUser().getId().equals(user.getId())){
+                throw new RestApiException(PaymentErrorCode.PAYMENT_VERIFY_NOT_MATCH_USER);
+            }
 
             payment.updateStatusToComplete(paymentVerificationRequest.getImpUid());
         }
@@ -79,24 +84,17 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
     //결제 취소
     @Transactional
-    public PaymentCancelResponse cancelPayment(final Long userId, final Long reservationId){
+    public void cancelPayment(final Reservation reservation){
 
-        Reservation reservation = getReservationById(reservationId);
-        User user = userRepository.getById(userId);
-
-        validateReservation(user,reservation);
-        Payment payment = paymentRepository.findByReservationId(reservationId)
-                .orElseThrow(()->new RestApiException(PaymentErrorCode.PAYMENT_NOT_FOUND));
-
-        com.siot.IamportRestClient.response.Payment paymentCancelResponse = cancelPayment(payment);
-
-        return PaymentCancelResponse.from(paymentCancelResponse);
+        paymentRepository.findByReservationAndPaymentStatus(reservation,PaymentStatus.PAID).ifPresent(payment -> {
+            cancelPaymentWithPortOne(payment);
+        });
     }
 
     // 기존 결제 전 정보가 있다면 가지고 오고 그렇지 않다면 새로운 결제 반환
     private Payment getPayment(final Reservation reservation) {
 
-        return paymentRepository.findByReservationAndPaymentStatus(reservation,PaymentStatus.READY).orElseGet(()->{
+        return paymentRepository.findByReservationAndPaymentStatus(reservation, PaymentStatus.READY).orElseGet(()->{
             Payment newPayment = Payment.createPayment(UUID.randomUUID().toString(),
                                                        UUID.randomUUID().toString(),
                                                        PayMethod.CARD,
@@ -106,11 +104,6 @@ public class PortOnePaymentServiceImpl implements PaymentService{
             return newPayment;
         });
 
-    }
-
-    private Reservation getReservationById(final Long reservationId) {
-        return reservationRepository.findById(reservationId).orElseThrow(() -> new RestApiException(
-                ReservationErrorCode.RESERVATION_NOT_FOUND));
     }
 
 
@@ -159,22 +152,17 @@ public class PortOnePaymentServiceImpl implements PaymentService{
 
 
     // 상태가 PAID가 아닌 경우 환불 불가
-    private com.siot.IamportRestClient.response.Payment cancelPayment(final Payment payment) {
-        if(payment.getPaymentStatus().equals(PaymentStatus.PAID)){
-            com.siot.IamportRestClient.response.Payment cancelData = getCancelData(payment);
+    private void cancelPaymentWithPortOne(final Payment payment) {
 
-            // 변경 감지 시 .. 나중 생각
-            payment.updateStatusToCancel();
+        com.siot.IamportRestClient.response.Payment cancelData = getPortOneCancelData(payment);
+        // 변경 감지 시 .. 나중 생각
+        payment.updateStatusToCancel();
 
-            return cancelData;
-        }
-
-        throw new RestApiException(PaymentErrorCode.PAYMENT_NOT_PAID);
     }
 
 
     // 포트원에 전액 환불 요청
-    private com.siot.IamportRestClient.response.Payment getCancelData(final Payment payment){
+    private com.siot.IamportRestClient.response.Payment getPortOneCancelData(final Payment payment){
 
         try{
             IamportResponse<com.siot.IamportRestClient.response.Payment> cancelResponse =

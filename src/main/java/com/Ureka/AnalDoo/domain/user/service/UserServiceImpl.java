@@ -20,22 +20,24 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void validateDuplicationEmail(String email) {
-        if(userRepository.existsByEmail(email)) {
+    // 이메일 중복 확인
+    private void validateDuplicateEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
             throw new RestApiException(UserErrorCode.EMAIL_ALREADY_EXISTS);
         }
     }
 
-    public void validateDuplicationNickname(String nickname) {
-        if(userRepository.existsByNickname(nickname)) {
+    // 닉네임 중복 확인
+    private void validateDuplicateNickname(String nickname) {
+        if (userRepository.existsByNickname(nickname)) {
             throw new RestApiException(UserErrorCode.NICKNAME_ALREADY_EXISTS);
         }
     }
 
     @Transactional
     public RegisterNormalUserResponse registerNormalUser(RegisterNormalUserRequest request) {
-        validateDuplicationEmail(request.getEmail());
-        validateDuplicationNickname(request.getNickname());
+        validateDuplicateEmail(request.getEmail());
+        validateDuplicateNickname(request.getNickname());
 
         User user = request.toEntity(passwordEncoder.encode(request.getPassword()));
         return RegisterNormalUserResponse.from(userRepository.save(user));
@@ -43,8 +45,8 @@ public class UserServiceImpl implements UserService{
 
     @Transactional
     public RegisterSocialUserResponse registerSocialUsers(RegisterSocialUserRequest request) {
-        validateDuplicationEmail(request.getEmail());
-        validateDuplicationNickname(request.getNickname());
+        validateDuplicateEmail(request.getEmail());
+        validateDuplicateNickname(request.getNickname());
 
         User user = request.toEntity(); // 비밀번호 없음
         return RegisterSocialUserResponse.from(userRepository.save(user));
