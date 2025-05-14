@@ -40,7 +40,6 @@ public class JWTFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7); // "Bearer " 제거
 
         // 2. 만료 검사
-        // ✅ reissue 요청은 토큰 만료여도 통과
         if (request.getRequestURI().equals("/api/v1/users/reissue")) {
             filterChain.doFilter(request, response);
             return;
