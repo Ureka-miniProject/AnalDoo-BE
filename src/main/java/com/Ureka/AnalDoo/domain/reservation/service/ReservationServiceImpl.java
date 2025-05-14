@@ -9,7 +9,6 @@ import com.Ureka.AnalDoo.domain.entity.Payment;
 import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
-import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
 import com.Ureka.AnalDoo.domain.payment.repository.PaymentRepository;
 import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
 import com.Ureka.AnalDoo.domain.reservation.dto.request.ReservationCreateRequest;
@@ -43,7 +42,7 @@ public class ReservationServiceImpl implements ReservationService {
 
         validateReservationAvailable(user, competition);
 
-        Optional<Reservation> existedReservationOpt = reservationRepository.getByUserAndCompetition(user, competition);
+        Optional<Reservation> existedReservationOpt = reservationRepository.findByUserAndCompetition(user, competition);
 
         if (existedReservationOpt.isPresent()) {
             Reservation existedReservation = existedReservationOpt.get();
