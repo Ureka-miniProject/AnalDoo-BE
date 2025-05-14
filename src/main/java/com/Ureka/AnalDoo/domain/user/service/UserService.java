@@ -7,10 +7,11 @@ import com.Ureka.AnalDoo.domain.user.dto.response.RegisterNormalUserResponse;
 import com.Ureka.AnalDoo.domain.user.dto.response.RegisterSocialUserResponse;
 
 public interface UserService{
+
     // 일반 회원 가입
-    public RegisterNormalUserResponse registerNormalUser(RegisterNormalUserRequest request);
+    RegisterNormalUserResponse registerNormalUser(RegisterNormalUserRequest request);
     // 소셜 회원 가입
-    public RegisterSocialUserResponse registerSocialUsers(RegisterSocialUserRequest request);
+     RegisterSocialUserResponse registerSocialUsers(RegisterSocialUserRequest request);
     // 닉네임 수정
     public void updateNickname(String email, String nickname);
     // 비밀번호 수정

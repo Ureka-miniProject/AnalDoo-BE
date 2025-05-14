@@ -3,6 +3,7 @@ package com.Ureka.AnalDoo.domain.competition.repository;
 import com.Ureka.AnalDoo.common.exception.RestApiException;
 import com.Ureka.AnalDoo.common.exception.errorcode.CompetitionErrorCode;
 import com.Ureka.AnalDoo.domain.entity.Competition;
+import com.Ureka.AnalDoo.domain.entity.Reservation;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,8 +14,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CompetitionRepository extends JpaRepository<Competition, Long> {
+
+    Optional<Competition> findByIdAndIsDeleted(Long id, boolean isDeleted);
     default Competition getById(Long id) {
-        return findById(id).orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
+        return findByIdAndIsDeleted(id,false).orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
     }
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

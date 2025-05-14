@@ -1,12 +1,14 @@
 package com.Ureka.AnalDoo.domain.payment.controller;
 
-import com.Ureka.AnalDoo.domain.payment.dto.PaymentCancelResponse;
+
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentPrepareInfoResponse;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationRequest;
 import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,19 +24,14 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/prepare/{reservationId}")
-    public ResponseEntity<PaymentPrepareInfoResponse> paymentReady(@PathVariable("reservationId") Long reservationId){
-        return ResponseEntity.ok(paymentService.preparePayment(1L,reservationId));
+    public ResponseEntity<PaymentPrepareInfoResponse> paymentReady(Authentication authentication,@PathVariable("reservationId") Long reservationId){
+        return ResponseEntity.ok(paymentService.preparePayment(authentication.getName(),reservationId));
     }
 
     @PostMapping("/verify")
-    public void paymentVerify(@RequestBody @Valid PaymentVerificationRequest paymentVerificationDto){
+    public void paymentVerify(Authentication authentication,@RequestBody @Valid PaymentVerificationRequest paymentVerificationDto){
 
-        paymentService.verifyPayment(paymentVerificationDto);
-    }
-
-    @PatchMapping ("/cancel/{reservationId}")
-    public ResponseEntity<PaymentCancelResponse> cancelPayment(@PathVariable("reservationId") Long reservationId){
-        return ResponseEntity.ok(paymentService.cancelPayment(1L,reservationId));
+        paymentService.verifyPayment(authentication.getName(),paymentVerificationDto);
     }
 
 }

@@ -1,14 +1,14 @@
 package com.Ureka.AnalDoo.domain.payment.service;
 
-import com.Ureka.AnalDoo.domain.payment.dto.PaymentCancelResponse;
+import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentPrepareInfoResponse;
 import com.Ureka.AnalDoo.domain.payment.dto.PaymentVerificationRequest;
 
 public interface PaymentService {
 
-    PaymentPrepareInfoResponse preparePayment(final Long userId, final Long reservationId);
+    PaymentPrepareInfoResponse preparePayment(final String email, final Long reservationId);
 
-    void verifyPayment(final PaymentVerificationRequest paymentVerificationRequest);
+    void verifyPayment(final String email,final PaymentVerificationRequest paymentVerificationRequest);
 
-    PaymentCancelResponse cancelPayment(final Long userId, final Long reservationId);
+    void cancelPayment(final Reservation reservation);
 }
