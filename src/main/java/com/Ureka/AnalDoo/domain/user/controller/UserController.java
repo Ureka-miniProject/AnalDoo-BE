@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -58,11 +59,11 @@ public class UserController {
     // 로그아웃 → DB RefreshToken 제거 + 쿠키 삭제
     @PostMapping("/logout")
     public ResponseEntity<LogoutResponse> logout(
-            @AuthenticationPrincipal CustomUserDetails user,
+            Authentication authentication,
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        authService.logout(user.getEmail());
+        authService.logout(authentication.getName());
         expireRefreshTokenCookie(response);
         return ResponseEntity.ok().build();
     }
@@ -70,32 +71,32 @@ public class UserController {
     // 닉네임 변경
     @PatchMapping("/nickname")
     public ResponseEntity<UpdateNicknameResponse> updateNickname(
-            @AuthenticationPrincipal CustomUserDetails user,
+            Authentication authentication,
             HttpServletRequest request,
             @Valid @RequestBody UpdateNicknameRequest nicknameRequest
     ) {
-        userService.updateNickname(user.getEmail(), nicknameRequest.getNewNickname());
+        userService.updateNickname(authentication.getName(), nicknameRequest.getNewNickname());
         return ResponseEntity.ok().build();
     }
 
     // 비밀번호 변경
     @PatchMapping("/updatePassword")
     public ResponseEntity<UpdatePasswordResponse> updatePassword(
-            @AuthenticationPrincipal CustomUserDetails user,
+            Authentication authentication,
             HttpServletRequest request,
             @RequestBody @Valid UpdatePasswordRequest passwordRequest
     ) {
-        userService.updatePassword(user.getEmail(), passwordRequest.getNewPassword());
+        userService.updatePassword(authentication.getName(), passwordRequest.getNewPassword());
         return ResponseEntity.ok().build();
     }
 
     // 내 정보 조회
     @GetMapping("/mypage")
     public ResponseEntity<MyInfoResponse> getMyInformation(
-            @AuthenticationPrincipal CustomUserDetails user,
+            Authentication authentication,
             HttpServletRequest request
     ) {
-        return ResponseEntity.ok(userService.getMyInfo(user.getEmail()));
+        return ResponseEntity.ok(userService.getMyInfo(authentication.getName()));
     }
 
     // 토큰 재발급

@@ -13,9 +13,9 @@ public interface UserService{
     // 소셜 회원 가입
      RegisterSocialUserResponse registerSocialUsers(RegisterSocialUserRequest request);
     // 닉네임 수정
-    public void updateNickname(String email, String nickname);
+     void updateNickname(String email, String nickname);
     // 비밀번호 수정
-    public void updatePassword(String email, String newPassword);
+     void updatePassword(String email, String newPassword);
     // 내 정보 조회
-    public MyInfoResponse getMyInfo(String email);
+     MyInfoResponse getMyInfo(String email);
 }
