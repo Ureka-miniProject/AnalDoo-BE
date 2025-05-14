@@ -1,7 +1,7 @@
-package com.Ureka.AnalDoo.auth.jwt;
+package com.Ureka.AnalDoo.auth.filter;
 
+import com.Ureka.AnalDoo.auth.jwt.JWTUtil;
 import com.Ureka.AnalDoo.auth.service.CustomUserDetails;
-import com.Ureka.AnalDoo.domain.entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -1,6 +1,8 @@
 package com.Ureka.AnalDoo.domain.user.service;
 
+import com.Ureka.AnalDoo.auth.jwt.JWTUtil;
 import com.Ureka.AnalDoo.common.exception.RestApiException;
+import com.Ureka.AnalDoo.common.exception.errorcode.CommonErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.UserErrorCode;
 import com.Ureka.AnalDoo.domain.entity.User;
 import com.Ureka.AnalDoo.domain.user.dto.reqeust.RegisterNormalUserRequest;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -20,16 +23,26 @@ public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JWTUtil jwtUtil;
+
+    // 이메일 추출
+    public String extractEmailFromAuthorization(String authHeader) {
+        if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
+            throw new RestApiException(CommonErrorCode.NOT_EXIST_BEARER_SUFFIX);
+        }
+        String token = authHeader.substring(7);
+        return jwtUtil.getUserEmail(token);
+    }
 
     // 이메일 중복 확인
-    public void validateDuplicateEmail(String email) {
+    private void validateDuplicateEmail(String email) {
         if (userRepository.existsByEmail(email)) {
             throw new RestApiException(UserErrorCode.EMAIL_ALREADY_EXISTS);
         }
     }
 
     // 닉네임 중복 확인
-    public void validateDuplicateNickname(String nickname) {
+    private void validateDuplicateNickname(String nickname) {
         if (userRepository.existsByNickname(nickname)) {
             throw new RestApiException(UserErrorCode.NICKNAME_ALREADY_EXISTS);
         }

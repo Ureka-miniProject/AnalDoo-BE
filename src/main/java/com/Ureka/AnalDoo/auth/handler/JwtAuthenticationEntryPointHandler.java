@@ -1,12 +1,12 @@
 package com.Ureka.AnalDoo.auth.handler;
 
-import com.Ureka.AnalDoo.auth.dto.response.BaseResponse;
+import com.Ureka.AnalDoo.common.exception.ErrorResponseDto;
+import com.Ureka.AnalDoo.common.exception.errorcode.UserErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -18,18 +18,25 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPoint {
 
-    private static final String NOT_AUTHENTICATED="인증에 실패하였습니다";
     private final ObjectMapper objectMapper;
+
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException)
             throws IOException, ServletException {
 
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(objectMapper.writeValueAsString(BaseResponse.createError(NOT_AUTHENTICATED)));
+        UserErrorCode errorCode = UserErrorCode.ACCESS_TOKEN_EXPIRED; // 또는 상황에 따라 다른 에러코드
 
+        ErrorResponseDto errorResponse = ErrorResponseDto.builder()
+                .code(errorCode.name()) // "ACCESS_TOKEN_EXPIRED"
+                .message(errorCode.getMessage())
+                .errors(null)
+                .build();
+
+        response.setStatus(errorCode.getHttpStatus().value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }

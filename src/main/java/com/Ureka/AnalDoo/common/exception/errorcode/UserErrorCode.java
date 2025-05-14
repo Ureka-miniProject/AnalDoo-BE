@@ -21,6 +21,10 @@ public enum UserErrorCode implements ErrorCode {
     ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Access Token이 만료되었습니다."),
     REFRESH_TOKEN_NOT_EXIST(HttpStatus.UNAUTHORIZED, "Refresh Token이 존재하지 않습니다."),
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Refresh Token이 만료되었습니다."),
+    /**
+     *  403 Forbidden
+     */
+    USER_NOT_FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
     /**
      * 404 Not Found
