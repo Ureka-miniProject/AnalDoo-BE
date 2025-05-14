@@ -22,8 +22,8 @@ public class ReservationController {
     private final ReservationService reservationService;
 
     @PostMapping
-    public ResponseEntity<ReservationCreateResponse> create(@RequestBody @Valid ReservationCreateRequest request){
-        ReservationCreateResponse response = reservationService.create(request, 1L);
+    public ResponseEntity<ReservationCreateResponse> create(@RequestBody @Valid ReservationCreateRequest request, Authentication authentication){
+        ReservationCreateResponse response = reservationService.create(request, authentication.getName());
         return ResponseEntity.ok(response);
     }
 

@@ -34,8 +34,8 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Transactional
     @Override
-    public ReservationCreateResponse create(ReservationCreateRequest request, Long userId) {
-        User user = userRepository.getById(userId);
+    public ReservationCreateResponse create(ReservationCreateRequest request, String email) {
+        User user = userRepository.getByEmail(email);
         Competition competition = competitionRepository.findByIdWithLock(request.getCompetitionId())
                 .orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
 

@@ -66,7 +66,7 @@ class ReservationConcurrencyTest {
 
             executorService.execute(() -> {
                 try {
-                    reservationService.create(new ReservationCreateRequest(competition.getId()), testUser.getId());
+                    reservationService.create(new ReservationCreateRequest(competition.getId()), testUser.getEmail());
                 } catch (RestApiException ignored) {
                 } finally {
                     latch.countDown();
