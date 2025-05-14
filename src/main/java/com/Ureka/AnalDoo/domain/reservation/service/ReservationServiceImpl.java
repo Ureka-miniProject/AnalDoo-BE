@@ -9,7 +9,6 @@ import com.Ureka.AnalDoo.domain.entity.Payment;
 import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
-import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
 import com.Ureka.AnalDoo.domain.payment.repository.PaymentRepository;
 import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
 import com.Ureka.AnalDoo.domain.reservation.dto.request.ReservationCreateRequest;
@@ -19,6 +18,7 @@ import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,8 +32,9 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final CompetitionRepository competitionRepository;
-    private final PaymentService paymentService;
+    private final PaymentRepository paymentRepository;
 
+    private final PaymentService paymentService;
 
     @Transactional
     @Override
@@ -42,13 +43,36 @@ public class ReservationServiceImpl implements ReservationService {
         Competition competition = competitionRepository.findByIdWithLock(request.getCompetitionId())
                 .orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
 
-        validateReservationAvailable(competition);
+        validateReservationAvailable(user, competition);
 
+        Optional<Reservation> existedReservationOpt = reservationRepository.findByUserAndCompetition(user, competition);
+
+        if (existedReservationOpt.isPresent()) {
+            Reservation existedReservation = existedReservationOpt.get();
+            Payment payment = paymentRepository.findByReservationId(existedReservation.getId())
+                    .orElseThrow(() -> new RestApiException(ReservationErrorCode.RESERVATION_NOT_FOUND));
+
+            switch (payment.getPaymentStatus()) {
+                case READY -> {
+                    return ReservationCreateResponse.from(existedReservation);
+                }
+                case PAID -> {
+                    throw new RestApiException(ReservationErrorCode.RESERVATION_ALREADY_EXISTS);
+                }
+                default -> throw new RestApiException(ReservationErrorCode.RESERVATION_ALREADY_EXISTS);
+            }
+        }
+
+        return createNewReservation(user, competition);
+    }
+
+    private ReservationCreateResponse createNewReservation(User user, Competition competition) {
         Reservation reservation = Reservation.of(user, competition);
-        Reservation savedReservation = reservationRepository.save(reservation);
         competition.increaseEntryCount();
 
-        return ReservationCreateResponse.from(savedReservation);
+        Reservation saved = reservationRepository.save(reservation);
+
+        return ReservationCreateResponse.from(saved);
     }
 
     public List<MyJoinedCompetitionResponse> getMyJoinedCompetitions(Long userId, boolean isDeleted) {
@@ -64,7 +88,11 @@ public class ReservationServiceImpl implements ReservationService {
                 .toList();
     }
 
-    private void validateReservationAvailable(Competition competition) {
+    private void validateReservationAvailable(User user,Competition competition) {
+        if (competition.getManager().getId().equals(user.getId())) {
+            throw new RestApiException(ReservationErrorCode.RESERVATION_HOST_NOT_ALLOWED);
+        }
+
         LocalDateTime now = LocalDateTime.now();
 
         if (competition.getStatus() == CompetitionStatus.CLOSED || competition.getPeriod().getEndDate().isBefore(now)) {
@@ -92,7 +120,6 @@ public class ReservationServiceImpl implements ReservationService {
         competition.decreaseEntryCount();
 
         paymentService.cancelPayment(reservation);
-
     }
 
     private void validateReservationRemove(final Reservation reservation,final User user){
@@ -100,6 +127,5 @@ public class ReservationServiceImpl implements ReservationService {
         if(!reservation.getUser().getId().equals(user.getId())){
             throw new RestApiException(ReservationErrorCode.RESERVATION_USER_NOT_MATCH);
         }
-
     }
 }
