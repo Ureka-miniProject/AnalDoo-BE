@@ -13,10 +13,13 @@ import com.Ureka.AnalDoo.domain.entity.enums.PaymentStatus;
 import com.Ureka.AnalDoo.domain.payment.repository.PaymentRepository;
 import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
 import com.Ureka.AnalDoo.domain.reservation.dto.request.ReservationCreateRequest;
+import com.Ureka.AnalDoo.domain.reservation.dto.response.MyJoinedCompetitionResponse;
 import com.Ureka.AnalDoo.domain.reservation.dto.response.ReservationCreateResponse;
 import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +49,19 @@ public class ReservationServiceImpl implements ReservationService {
         competition.increaseEntryCount();
 
         return ReservationCreateResponse.from(savedReservation);
+    }
+
+    public List<MyJoinedCompetitionResponse> getMyJoinedCompetitions(Long userId, boolean isDeleted) {
+        List<Reservation> reservations = reservationRepository.findAllByUserIdAndIsDeleted(userId, isDeleted);
+
+        if (reservations.isEmpty()) {
+            throw new RestApiException(CompetitionErrorCode.COMPETITION_JOIN_LIST_EMPTY);
+        }
+
+        return reservations.stream()
+                .map(Reservation::getCompetition)
+                .map(MyJoinedCompetitionResponse::from)
+                .toList();
     }
 
     private void validateReservationAvailable(Competition competition) {

@@ -1,4 +1,4 @@
-package com.Ureka.AnalDoo.domain.competition.controller;
+package com.Ureka.AnalDoo.domain.competition.dto.response.controller;
 
 import com.Ureka.AnalDoo.domain.competition.dto.request.CompetitionCreateRequest;
 import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionCreateResponse;

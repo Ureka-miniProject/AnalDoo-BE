@@ -24,4 +24,6 @@ public interface ReservationRepository extends JpaRepository<Reservation,Long> {
     default Reservation getById(Long id) {
         return findByIdAndIsDeleted(id,false).orElseThrow(() -> new RestApiException(ReservationErrorCode.RESERVATION_NOT_FOUND));
     }
+
+    List<Reservation> findAllByUserIdAndIsDeleted(Long userId, boolean isDeleted);
 }

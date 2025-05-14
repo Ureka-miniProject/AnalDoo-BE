@@ -9,8 +9,14 @@ import com.Ureka.AnalDoo.auth.service.CustomUserDetails;
 import com.Ureka.AnalDoo.common.exception.RestApiException;
 import com.Ureka.AnalDoo.common.exception.errorcode.CommonErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.UserErrorCode;
+import com.Ureka.AnalDoo.domain.competition.dto.response.MyCreatedCompetitionResponse;
+import com.Ureka.AnalDoo.domain.competition.service.CompetitionService;
+import com.Ureka.AnalDoo.domain.entity.User;
+import com.Ureka.AnalDoo.domain.reservation.dto.response.MyJoinedCompetitionResponse;
+import com.Ureka.AnalDoo.domain.reservation.service.ReservationService;
 import com.Ureka.AnalDoo.domain.user.dto.reqeust.*;
 import com.Ureka.AnalDoo.domain.user.dto.response.*;
+import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import com.Ureka.AnalDoo.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,6 +30,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.Ureka.AnalDoo.auth.jwt.CookieUtil.addRefreshTokenCookie;
@@ -38,6 +45,9 @@ public class UserController {
     private final UserService userService;
     private final AuthService authService;
     private final JWTUtil jwtUtil;
+    private final CompetitionService competitionService;
+    private final ReservationService reservationService;
+    private final UserRepository userRepository;
 
     // 회원가입
     @PostMapping("/join")
@@ -112,5 +122,32 @@ public class UserController {
         TokenResponse token = authService.reissue(refreshToken);
         addRefreshTokenCookie(response, token.getRefreshToken(), token.getRefreshTokenValidationTime());
         return ResponseEntity.ok(TokenLoginResponse.from(token));
+    }
+
+    @GetMapping("/my-created")
+    public ResponseEntity<List<MyCreatedCompetitionResponse>> getMyCreatedCompetitions(
+            Authentication authentication,
+            @RequestParam(defaultValue = "false") boolean includeDeleted
+    ) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        User user = userRepository.findById(userDetails.getId()).orElseThrow(() -> new RestApiException(UserErrorCode.USER_NOT_FOUND));
+
+        List<MyCreatedCompetitionResponse> responses =
+                competitionService.getMyCreatedCompetitions(user, includeDeleted);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/my-joined")
+    public ResponseEntity<List<MyJoinedCompetitionResponse>> getMyJoinedCompetitions(
+            Authentication authentication,
+            @RequestParam(defaultValue = "false") boolean includeDeleted
+    ) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+
+        List<MyJoinedCompetitionResponse> responses = reservationService.getMyJoinedCompetitions(userId, includeDeleted);
+
+        return ResponseEntity.ok(responses);
     }
 }
