@@ -1,8 +1,12 @@
 package com.Ureka.AnalDoo.auth.config;
 
+import com.Ureka.AnalDoo.auth.filter.JwtAuthenticationFilter;
+import com.Ureka.AnalDoo.auth.handler.JwtAccessDeniedHandler;
+import com.Ureka.AnalDoo.auth.handler.JwtAuthenticationEntryPointHandler;
 import com.Ureka.AnalDoo.auth.jwt.JWTFilter;
 import com.Ureka.AnalDoo.auth.jwt.JWTUtil;
-import com.Ureka.AnalDoo.auth.jwt.LoginFilter;
+import com.Ureka.AnalDoo.auth.filter.LoginFilter;
+import com.Ureka.AnalDoo.auth.service.CustomUserDetailsService;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -28,6 +32,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtAuthenticationEntryPointHandler authenticationEntryPointHandler;
+    private final JwtAccessDeniedHandler accessDeniedHandler;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
 
@@ -42,7 +48,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, UserRepository userRepository) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, UserRepository userRepository, CustomUserDetailsService customUserDetailsService) throws Exception {
 
         //cors 설정
         http
@@ -82,16 +88,29 @@ public class SecurityConfig {
         //http basic 인증 방식 disable
         http
                 .httpBasic((auth) -> auth.disable());
+        http
+                .exceptionHandling((exception)
+                        -> exception.authenticationEntryPoint(authenticationEntryPointHandler));
+        http
+                .exceptionHandling((exception)
+                        -> exception.accessDeniedHandler(accessDeniedHandler));
 
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("api/v1/users/**", "/").permitAll()
+                        .requestMatchers("/api/v1/users/login",
+                                "/api/v1/users/signup",
+                                "/api/v1/users/reissue",
+                                "/api/v1/users/join",
+                                "/").permitAll()
                         .anyRequest().authenticated()
                 );
-        //JWTFilter 등록
+        //JwtAuthenticationFilter 등록
         http
-                .addFilterBefore(new JWTFilter(jwtUtil, userRepository), LoginFilter.class);
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtUtil, customUserDetailsService),
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         //필터 추가 LoginFilter()는 인자를 받음
         // (AuthenticationManger() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요

@@ -1,84 +1,91 @@
 package com.Ureka.AnalDoo.auth.jwt;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.impl.DefaultJwtParser;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 @Component
 public class JWTUtil {
 
-    private SecretKey secretKey;
+    private final SecretKey secretKey;
 
     public JWTUtil(@Value("${spring.jwt.secret:@null}") String secret) {
-        secretKey = new SecretKeySpec(
+        this.secretKey = new SecretKeySpec(
                 secret.getBytes(StandardCharsets.UTF_8),
                 Jwts.SIG.HS256.key().build().getAlgorithm()
         );
     }
 
-    public String getUserEmail(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .get("email", String.class);
-    }
-
-    public String getRole(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .get("role", String.class);
-    }
-
-    public Boolean isExpired(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getExpiration()
-                .before(new Date());
-    }
-
-    public String createAccessToken(String email, String role, long vaildityMs) {
+    // AccessToken & RefreshToken 생성
+    public String createAccessToken(String email, String role, long validityMs) {
         Date now = new Date();
-
         return Jwts.builder()
                 .claim("email", email)
                 .claim("role", role)
                 .issuedAt(now)
-                .expiration(new Date(now.getTime() + vaildityMs))
+                .expiration(new Date(now.getTime() + validityMs))
                 .signWith(secretKey)
                 .compact();
     }
 
-    public String createRefreshToken(long vaildityMs) {
+    public String createRefreshToken(String email, long validityMs) {
         Date now = new Date();
-
         return Jwts.builder()
+                .claim("email", email)
                 .issuedAt(now)
-                .expiration(new Date(now.getTime() + vaildityMs))
+                .expiration(new Date(now.getTime() + validityMs))
                 .signWith(secretKey)
                 .compact();
     }
 
+    // 이메일 추출 (만료된 토큰에서도 추출 가능)
+    public String getUserEmail(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .get("email", String.class);
+        } catch (ExpiredJwtException e) {
+            return e.getClaims().get("email", String.class);
+        }
+    }
 
+    public String getRole(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .get("role", String.class);
+        } catch (ExpiredJwtException e) {
+            return e.getClaims().get("role", String.class);
+        }
+    }
+
+    // 만료 여부 확인 (예외 발생 방지)
+    public boolean isExpired(String token) {
+        try {
+            Date expiration = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .getExpiration();
+
+            return expiration.before(new Date());
+        } catch (ExpiredJwtException e) {
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return true; // 파싱 실패 = 잘못된 토큰
+        }
+    }
 }
