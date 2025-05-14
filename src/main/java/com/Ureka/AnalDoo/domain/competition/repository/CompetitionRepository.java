@@ -3,7 +3,6 @@ package com.Ureka.AnalDoo.domain.competition.repository;
 import com.Ureka.AnalDoo.common.exception.RestApiException;
 import com.Ureka.AnalDoo.common.exception.errorcode.CompetitionErrorCode;
 import com.Ureka.AnalDoo.domain.entity.Competition;
-import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.User;
 import jakarta.persistence.LockModeType;
 
@@ -27,5 +26,6 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
     @Query("SELECT c FROM Competition c WHERE c.id = :id")
     Optional<Competition> findByIdWithLock(@Param("id") Long id);
 
-    List<Competition> findAllByManagerAndIsDeleted(User user, boolean isDeleted);
+    @Query("SELECT c FROM Competition c WHERE c.manager = :manager AND c.isDeleted = false")
+    List<Competition> findAllByManagerAndIsDeleted(@Param("manager") User user);
 }
