@@ -2,21 +2,19 @@ package com.Ureka.AnalDoo.domain.competition.service;
 
 import com.Ureka.AnalDoo.common.exception.RestApiException;
 import com.Ureka.AnalDoo.common.exception.errorcode.CompetitionErrorCode;
-import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
+import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionDetailResponse;
+import com.Ureka.AnalDoo.domain.entity.Competition;
+
 import com.Ureka.AnalDoo.common.exception.errorcode.UserErrorCode;
 import com.Ureka.AnalDoo.domain.competition.dto.request.CompetitionCreateRequest;
 import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionCreateResponse;
-import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionDetailResponse;
+import com.Ureka.AnalDoo.domain.competition.dto.response.MyCreatedCompetitionResponse;
 import com.Ureka.AnalDoo.domain.competition.repository.CompetitionRepository;
-import com.Ureka.AnalDoo.domain.entity.Competition;
-import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
 import com.Ureka.AnalDoo.domain.entity.User;
 import com.Ureka.AnalDoo.domain.payment.service.PaymentFacade;
 import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
-import com.Ureka.AnalDoo.domain.reservation.service.ReservationService;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -68,9 +66,9 @@ public class CompetitionService {
 
         reservationRepository.findByCompetitionId(competitionId).forEach(reservation -> {
 
-                    reservation.delete();
-                    paymentFacade.cancelPayment(reservation);
-                });
+            reservation.delete();
+            paymentFacade.cancelPayment(reservation);
+        });
 
     }
 
@@ -85,6 +83,18 @@ public class CompetitionService {
         }
     }
 
+    public List<MyCreatedCompetitionResponse> getMyCreatedCompetitions(User user){
+        List<Competition> competitions = competitionRepository.findAllByManagerAndIsDeleted(user);
+
+        if(competitions.isEmpty()){
+            throw new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND);
+        }
+
+        return competitions.stream()
+                .map(MyCreatedCompetitionResponse::from)
+                .toList();
+    }
+
     public CompetitionDetailResponse getCompetitionDetail(Long competitionId) {
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
@@ -92,6 +102,5 @@ public class CompetitionService {
                 .competition(competition)
                 .build();
     }
-
-
 }
+

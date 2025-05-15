@@ -38,7 +38,7 @@ public class AuthService {
     // 토큰 생성 및 RefreshToken 저장
     @Transactional
     public TokenResponse generateTokensAndSave(User user) {
-        long accessTokenValidityMs = 1000L * 10; // 30분
+        long accessTokenValidityMs = 1000L * 60 * 30; // 30분
         long refreshTokenValidityMs = 1000L * 60 * 60 * 7; // 7일
 
         String accessToken = jwtUtil.createAccessToken(user.getEmail(), user.getRole().name(), accessTokenValidityMs);

@@ -12,11 +12,15 @@ import com.Ureka.AnalDoo.domain.entity.User;
 import com.Ureka.AnalDoo.domain.payment.repository.PaymentRepository;
 import com.Ureka.AnalDoo.domain.payment.service.PaymentFacade;
 import com.Ureka.AnalDoo.domain.reservation.dto.request.ReservationCreateRequest;
+import com.Ureka.AnalDoo.domain.reservation.dto.response.MyJoinedCompetitionResponse;
 import com.Ureka.AnalDoo.domain.reservation.dto.response.ReservationCreateResponse;
 import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.List;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +35,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final CompetitionRepository competitionRepository;
     private final PaymentRepository paymentRepository;
     private final PaymentFacade paymentFacade;
+
 
     @Transactional
     @Override
@@ -69,6 +74,19 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation saved = reservationRepository.save(reservation);
 
         return ReservationCreateResponse.from(saved);
+    }
+
+    public List<MyJoinedCompetitionResponse> getMyJoinedCompetitions(Long userId) {
+        List<Reservation> reservations = reservationRepository.findAllWithCompetitionByUserIdAndIsDeleted(userId);
+
+        if (reservations.isEmpty()) {
+            throw new RestApiException(CompetitionErrorCode.COMPETITION_JOIN_LIST_EMPTY);
+        }
+
+        return reservations.stream()
+                .map(Reservation::getCompetition)
+                .map(MyJoinedCompetitionResponse::from)
+                .toList();
     }
 
     private void validateReservationAvailable(User user,Competition competition) {

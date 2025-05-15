@@ -27,4 +27,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                 () -> new RestApiException(ReservationErrorCode.RESERVATION_NOT_FOUND));
     }
 
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.competition WHERE r.user.id = :userId AND r.isDeleted = false ")
+    List<Reservation> findAllWithCompetitionByUserIdAndIsDeleted(Long userId);
 }
