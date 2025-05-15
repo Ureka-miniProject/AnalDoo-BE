@@ -6,13 +6,13 @@ import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.UserErrorCode;
 import com.Ureka.AnalDoo.domain.competition.dto.request.CompetitionCreateRequest;
 import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionCreateResponse;
-import com.Ureka.AnalDoo.domain.competition.dto.response.MyCreatedCompetitionResponse;
+import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionDetailResponse;
 import com.Ureka.AnalDoo.domain.competition.repository.CompetitionRepository;
 import com.Ureka.AnalDoo.domain.entity.Competition;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
 import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
 import com.Ureka.AnalDoo.domain.entity.User;
-import com.Ureka.AnalDoo.domain.payment.service.PaymentService;
+import com.Ureka.AnalDoo.domain.payment.service.PaymentFacade;
 import com.Ureka.AnalDoo.domain.reservation.repository.ReservationRepository;
 import com.Ureka.AnalDoo.domain.reservation.service.ReservationService;
 import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
@@ -29,7 +29,7 @@ public class CompetitionService {
 
     private final CompetitionRepository competitionRepository;
     private final UserRepository userRepository;
-    private final PaymentService paymentService;
+    private final PaymentFacade paymentFacade;
     private final ReservationRepository reservationRepository;
 
     // competition 생성
@@ -69,7 +69,7 @@ public class CompetitionService {
         reservationRepository.findByCompetitionId(competitionId).forEach(reservation -> {
 
                     reservation.delete();
-                    paymentService.cancelPayment(reservation);
+                    paymentFacade.cancelPayment(reservation);
                 });
 
     }
@@ -96,4 +96,12 @@ public class CompetitionService {
                 .map(MyCreatedCompetitionResponse::from)
                 .toList();
     }
+}
+
+public CompetitionDetailResponse getCompetitionDetail(Long competitionId) {
+    Competition competition = competitionRepository.findById(competitionId)
+            .orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
+    return CompetitionDetailResponse.builder()
+            .competition(competition)
+            .build();
 }
