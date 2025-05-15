@@ -19,6 +19,7 @@ import com.Ureka.AnalDoo.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     private final PaymentService paymentService;
 
+
     @Transactional
     @Override
     public ReservationCreateResponse create(ReservationCreateRequest request, String email) {
@@ -43,25 +45,7 @@ public class ReservationServiceImpl implements ReservationService {
         Competition competition = competitionRepository.findByIdWithLock(request.getCompetitionId())
                 .orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
 
-        validateReservationAvailable(user, competition);
-
-        Optional<Reservation> existedReservationOpt = reservationRepository.findByUserAndCompetition(user, competition);
-
-        if (existedReservationOpt.isPresent()) {
-            Reservation existedReservation = existedReservationOpt.get();
-            Payment payment = paymentRepository.findByReservationId(existedReservation.getId())
-                    .orElseThrow(() -> new RestApiException(ReservationErrorCode.RESERVATION_NOT_FOUND));
-
-            switch (payment.getPaymentStatus()) {
-                case READY -> {
-                    return ReservationCreateResponse.from(existedReservation);
-                }
-                case PAID -> {
-                    throw new RestApiException(ReservationErrorCode.RESERVATION_ALREADY_EXISTS);
-                }
-                default -> throw new RestApiException(ReservationErrorCode.RESERVATION_ALREADY_EXISTS);
-            }
-        }
+        validateReservationAvailable(competition);
 
         return createNewReservation(user, competition);
     }
@@ -88,7 +72,6 @@ public class ReservationServiceImpl implements ReservationService {
                 .toList();
     }
 
-    private void validateReservationAvailable(Competition competition) {
     private void validateReservationAvailable(User user,Competition competition) {
         if (competition.getManager().getId().equals(user.getId())) {
             throw new RestApiException(ReservationErrorCode.RESERVATION_HOST_NOT_ALLOWED);
