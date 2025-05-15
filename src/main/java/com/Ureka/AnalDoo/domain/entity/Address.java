@@ -30,4 +30,9 @@ public class Address {
         this.zipcode = zipcode;
         this.detail = detail;
     }
+
+    @Override
+    public String toString() {
+        return  local + " " + street + " " + detail + " ";
+    }
 }

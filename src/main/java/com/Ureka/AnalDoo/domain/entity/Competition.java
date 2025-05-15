@@ -10,7 +10,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "competition")
+@Table(
+        name = "competition",
+        indexes = {
+                @Index(name = "idx_competition_date_id", columnList = "competition_date, competition_id")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Competition extends TimeBaseEntity {
