@@ -10,15 +10,16 @@ import lombok.Getter;
 @Builder(access = AccessLevel.PROTECTED)
 public class CompetitionSimpleResponse {
 
+    private Long id;
     private LocalDate startDate;
     private LocalDate endDate;
     private String competitionTime;
     private String name;
     private String address;
 
-
     public static CompetitionSimpleResponse from(Competition competition) {
         return CompetitionSimpleResponse.builder()
+                .id(competition.getId())
                 .name(competition.getName())
                 .address(competition.getAddress().toString())
                 .startDate(competition.getPeriod().getStartDate().toLocalDate())
