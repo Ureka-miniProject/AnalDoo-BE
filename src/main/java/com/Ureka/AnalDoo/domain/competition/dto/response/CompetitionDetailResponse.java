@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class CompetitionDetailResponse {
 
     private final Long id;
-    private final Long managerId;
+    private final String managerName;
     private final String name;
     private final String content;
     private final LocalDateTime startDate;
@@ -31,7 +31,7 @@ public class CompetitionDetailResponse {
     @Builder
     public CompetitionDetailResponse(Competition competition) {
         this.id = competition.getId();
-        this.managerId = competition.getManager().getId();
+        this.managerName = competition.getManager().getNickname();
         this.name = competition.getName();
         this.content = competition.getContent();
         this.startDate = competition.getPeriod().getStartDate();
