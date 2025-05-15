@@ -86,10 +86,6 @@ public class CompetitionService {
     public List<MyCreatedCompetitionResponse> getMyCreatedCompetitions(User user){
         List<Competition> competitions = competitionRepository.findAllByManagerAndIsDeleted(user);
 
-        if(competitions.isEmpty()){
-            throw new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND);
-        }
-
         return competitions.stream()
                 .map(MyCreatedCompetitionResponse::from)
                 .toList();
