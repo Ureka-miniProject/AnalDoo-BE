@@ -27,6 +27,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class CompetitionService {
@@ -101,7 +102,7 @@ public class CompetitionService {
 
         return getCompetitionsResponse.of(content, competitionSlice.hasNext());
     }
-  
+
     public List<MyCreatedCompetitionResponse> getMyCreatedCompetitions(User user){
         List<Competition> competitions = competitionRepository.findAllByManagerAndIsDeleted(user);
 
