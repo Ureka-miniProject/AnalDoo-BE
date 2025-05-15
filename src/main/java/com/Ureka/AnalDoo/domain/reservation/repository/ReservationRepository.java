@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -20,8 +21,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query("select r from Reservation r where r.competition.id =:competitionId and r.isDeleted = false")
     List<Reservation> findByCompetitionId(Long competitionId);
 
-    @Query("select r from Reservation r where r.user=: user and r.competition=: competition and r.isDeleted=false")
-    Optional<Reservation> findByUserAndCompetition(User user, Competition competition);
+    @Query("select r from Reservation r where r.user=:user and r.competition=:competition and r.isDeleted=false")
+    Optional<Reservation> findByUserAndCompetition(@Param("user") User user, @Param("competition") Competition competition);
 
     default Reservation getById(Long id) {
         return findByIdAndIsDeleted(id, false).orElseThrow(
