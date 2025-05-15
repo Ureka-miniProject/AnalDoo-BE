@@ -30,4 +30,15 @@ public class PaymentPrepareInfoResponse {
                                        payment.getReservation().getUser().getNickname(),
                                        payment.getReservation().getUser().getEmail());
     }
+
+    public static PaymentPrepareInfoResponse ofPaymentInfoDTO(final PaymentInfoDTO paymentInfoDTO,final String channelKey){
+        return new PaymentPrepareInfoResponse(channelKey,
+                paymentInfoDTO.getPayMethod().toString(),
+                paymentInfoDTO.getMerchantUId(),
+                paymentInfoDTO.getName(),
+                paymentInfoDTO.getAmount(),
+                paymentInfoDTO.getBuyerName(),
+                paymentInfoDTO.getBuyerEmail());
+    }
+
 }
