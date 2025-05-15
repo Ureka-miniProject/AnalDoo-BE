@@ -6,6 +6,7 @@ import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.UserErrorCode;
 import com.Ureka.AnalDoo.domain.competition.dto.request.CompetitionCreateRequest;
 import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionCreateResponse;
+import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionDetailResponse;
 import com.Ureka.AnalDoo.domain.competition.repository.CompetitionRepository;
 import com.Ureka.AnalDoo.domain.entity.Competition;
 import com.Ureka.AnalDoo.domain.entity.Reservation;
@@ -82,6 +83,14 @@ public class CompetitionService {
         if(!competition.getPeriod().getCompetitionDate().isAfter(LocalDateTime.now().plusDays(7))){
             throw new RestApiException(CompetitionErrorCode.COMPETITION_CANT_REMOVE);
         }
+    }
+
+    public CompetitionDetailResponse getCompetitionDetail(Long competitionId) {
+        Competition competition = competitionRepository.findById(competitionId)
+                .orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
+        return CompetitionDetailResponse.builder()
+                .competition(competition)
+                .build();
     }
 
 

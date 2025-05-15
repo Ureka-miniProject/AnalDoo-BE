@@ -26,4 +26,5 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         return findByIdAndIsDeleted(id, false).orElseThrow(
                 () -> new RestApiException(ReservationErrorCode.RESERVATION_NOT_FOUND));
     }
+
 }
