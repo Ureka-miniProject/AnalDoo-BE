@@ -27,9 +27,9 @@ public class ReservationController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{reservationId}")
-    public ResponseEntity<Void> delete(Authentication authentication, @PathVariable("reservationId") Long reservationId){
-        reservationService.delete(reservationId, authentication.getName());
+    @DeleteMapping("/{competitionId}")
+    public ResponseEntity<Void> delete(Authentication authentication, @PathVariable("competitionId") Long competitionId){
+        reservationService.delete(competitionId, authentication.getName());
         return ResponseEntity.ok().build();
     }
 }

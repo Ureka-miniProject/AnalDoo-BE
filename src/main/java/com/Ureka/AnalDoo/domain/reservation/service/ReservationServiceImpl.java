@@ -2,6 +2,7 @@ package com.Ureka.AnalDoo.domain.reservation.service;
 
 import com.Ureka.AnalDoo.common.exception.RestApiException;
 import com.Ureka.AnalDoo.common.exception.errorcode.CompetitionErrorCode;
+import com.Ureka.AnalDoo.common.exception.errorcode.ErrorCode;
 import com.Ureka.AnalDoo.common.exception.errorcode.ReservationErrorCode;
 import com.Ureka.AnalDoo.domain.competition.repository.CompetitionRepository;
 import com.Ureka.AnalDoo.domain.entity.Competition;
@@ -103,27 +104,22 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Transactional
     @Override
-    public void delete(Long reservationId, String email) {
+    public void delete(Long competitionId, String email) {
 
         User user = userRepository.getByEmail(email);
-        Reservation reservation = reservationRepository.getById(reservationId);
+        Competition competition = competitionRepository.findByIdWithLock(competitionId)
+                .orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
 
-        validateReservationRemove(reservation,user);
+        competition.decreaseEntryCount();
+
+        Reservation reservation = reservationRepository.findByUserAndCompetition(user,competition)
+                        .orElseThrow(()->new RestApiException(ReservationErrorCode.RESERVATION_NOT_FOUND));
 
         reservation.delete();
-
-        Competition competition = competitionRepository.findByIdWithLock(reservation.getCompetition().getId())
-                .orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
-        competition.decreaseEntryCount();
 
         paymentFacade.cancelPayment(reservation);
 
     }
 
-    private void validateReservationRemove(final Reservation reservation,final User user){
 
-        if(!reservation.getUser().getId().equals(user.getId())){
-            throw new RestApiException(ReservationErrorCode.RESERVATION_USER_NOT_MATCH);
-        }
-    }
 }

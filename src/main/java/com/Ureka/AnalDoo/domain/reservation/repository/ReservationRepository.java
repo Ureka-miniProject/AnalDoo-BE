@@ -20,6 +20,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query("select r from Reservation r where r.competition.id =:competitionId and r.isDeleted = false")
     List<Reservation> findByCompetitionId(Long competitionId);
 
+    @Query("select r from Reservation r where r.user=: user and r.competition=: competition and r.isDeleted=false")
     Optional<Reservation> findByUserAndCompetition(User user, Competition competition);
 
     default Reservation getById(Long id) {
