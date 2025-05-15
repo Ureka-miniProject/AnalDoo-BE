@@ -102,6 +102,7 @@ public class SecurityConfig {
                                 "/api/v1/users/signup",
                                 "/api/v1/users/reissue",
                                 "/api/v1/users/join",
+                                "/api/v1/competitions/list",
                                 "/").permitAll()
                         .anyRequest().authenticated()
                 );
