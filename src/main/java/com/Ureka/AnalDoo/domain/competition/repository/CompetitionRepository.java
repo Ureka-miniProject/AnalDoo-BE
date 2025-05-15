@@ -13,7 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CompetitionRepository extends JpaRepository<Competition, Long> {
+public interface CompetitionRepository extends JpaRepository<Competition, Long>, CompetitonRepositoryCustom {
 
     Optional<Competition> findByIdAndIsDeleted(Long id, boolean isDeleted);
     default Competition getById(Long id) {
