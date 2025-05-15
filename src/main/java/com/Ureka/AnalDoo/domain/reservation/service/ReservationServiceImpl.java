@@ -44,7 +44,25 @@ public class ReservationServiceImpl implements ReservationService {
         Competition competition = competitionRepository.findByIdWithLock(request.getCompetitionId())
                 .orElseThrow(() -> new RestApiException(CompetitionErrorCode.COMPETITION_NOT_FOUND));
 
-        validateReservationAvailable(competition);
+        validateReservationAvailable(user, competition);
+
+        Optional<Reservation> existedReservationOpt = reservationRepository.findByUserAndCompetition(user, competition);
+
+        if (existedReservationOpt.isPresent()) {
+            Reservation existedReservation = existedReservationOpt.get();
+            Payment payment = paymentRepository.findByReservationId(existedReservation.getId())
+                    .orElseThrow(() -> new RestApiException(ReservationErrorCode.RESERVATION_NOT_FOUND));
+
+            switch (payment.getPaymentStatus()) {
+                case READY -> {
+                    return ReservationCreateResponse.from(existedReservation);
+                }
+                case PAID -> {
+                    throw new RestApiException(ReservationErrorCode.RESERVATION_ALREADY_EXISTS);
+                }
+                default -> throw new RestApiException(ReservationErrorCode.RESERVATION_ALREADY_EXISTS);
+            }
+        }
 
         return createNewReservation(user, competition);
     }
