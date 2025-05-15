@@ -11,5 +11,5 @@ public interface ReservationService {
 
     List<MyJoinedCompetitionResponse> getMyJoinedCompetitions(Long userId);
 
-    void delete(Long reservationId,String email);
+    void delete(Long competitionId,String email);
 }
