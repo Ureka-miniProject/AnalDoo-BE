@@ -3,6 +3,7 @@ package com.Ureka.AnalDoo.domain.competition.repository;
 import static com.Ureka.AnalDoo.domain.entity.QCompetition.competition;
 
 import com.Ureka.AnalDoo.domain.entity.Competition;
+import com.Ureka.AnalDoo.domain.entity.enums.CompetitionStatus;
 import com.Ureka.AnalDoo.domain.entity.enums.Local;
 import com.Ureka.AnalDoo.domain.entity.enums.SportType;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -20,7 +21,8 @@ public class CompetitionRepositoryImpl implements CompetitonRepositoryCustom {
 
     @Override
     public Slice<Competition> findAllByDateAndSportTypeAndLocal(LocalDateTime date, SportType sportType, Local local,
-                                                                LocalDateTime lastDate, Long lastId, Pageable pageable) {
+                                                                LocalDateTime lastDate, Long lastId,
+                                                                Pageable pageable) {
         LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
         int pageSize = pageable.getPageSize();
@@ -29,6 +31,8 @@ public class CompetitionRepositoryImpl implements CompetitonRepositoryCustom {
                 .where(
                         competition.isDeleted.eq(false),
                         competition.sportType.eq(sportType),
+                        competition.status.eq(CompetitionStatus.OPEN),
+                        competition.period.endDate.goe(LocalDateTime.now()),
                         localEq(local),
                         competition.period.competitionDate.between(startOfDay, endOfDay),
                         cursorCondition(lastDate, lastId)
