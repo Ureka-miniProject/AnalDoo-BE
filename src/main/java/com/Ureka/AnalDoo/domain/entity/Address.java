@@ -33,6 +33,6 @@ public class Address {
 
     @Override
     public String toString() {
-        return  local + " " + street + " " + detail + " ";
+        return  local.getName() + " " + street + " " + detail + " ";
     }
 }
