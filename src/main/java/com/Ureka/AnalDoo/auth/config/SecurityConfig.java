@@ -65,7 +65,7 @@ public class SecurityConfig {
                                         "http://localhost:3000",
                                         "https://anal-doo-fe.vercel.app"
                                 ));
-                                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                                 configuration.setAllowedHeaders(List.of("*"));
                                 configuration.setAllowCredentials(true);
                                 configuration.setMaxAge(3600L);

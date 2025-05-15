@@ -3,6 +3,7 @@ package com.Ureka.AnalDoo.domain.competition.controller;
 import com.Ureka.AnalDoo.domain.competition.dto.request.CompetitionCreateRequest;
 import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionCreateResponse;
 import com.Ureka.AnalDoo.domain.competition.dto.response.getCompetitionsResponse;
+import com.Ureka.AnalDoo.domain.competition.dto.response.CompetitionDetailResponse;
 import com.Ureka.AnalDoo.domain.competition.service.CompetitionService;
 import com.Ureka.AnalDoo.domain.entity.enums.Local;
 import com.Ureka.AnalDoo.domain.entity.enums.SportType;
@@ -16,14 +17,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -51,6 +45,7 @@ public class CompetitionController {
         return ResponseEntity.ok().build();
     }
 
+
     @GetMapping("/list")
     public ResponseEntity<getCompetitionsResponse> getCompetitions(@RequestParam("sportType") SportType sportType,
                                                                        @RequestParam(value = "local", required = false) Local local,
@@ -60,6 +55,12 @@ public class CompetitionController {
                                                                        @PageableDefault(size = 10) Pageable pageable){
 
         getCompetitionsResponse response = competitionService.getCompetitions(date, sportType, local, lastDate, lastId, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{competitionId}")
+    public ResponseEntity<CompetitionDetailResponse> getCompetitionDetail(@PathVariable Long competitionId) {
+        CompetitionDetailResponse response = competitionService.getCompetitionDetail(competitionId);
         return ResponseEntity.ok(response);
     }
 }
