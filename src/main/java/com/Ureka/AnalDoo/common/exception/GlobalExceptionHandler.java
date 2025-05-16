@@ -82,8 +82,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull WebRequest request) {
         log.warn(ex.getMessage(), ex);
 
-        final String errMessage = Objects.requireNonNull(ex.getBindingResult().getFieldError())
-                .getDefaultMessage();
+        // 필드 오류 우선 확인
+        String errMessage;
+        if (!ex.getBindingResult().getFieldErrors().isEmpty()) {
+            errMessage = ex.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
+        }
+        // 클래스 레벨(Global) 오류 확인
+        else if (!ex.getBindingResult().getGlobalErrors().isEmpty()) {
+            errMessage = ex.getBindingResult().getGlobalErrors().get(0).getDefaultMessage();
+        }
+        // 기본 메시지
+        else {
+            errMessage = "잘못된 요청입니다.";
+        }
+
         return ResponseEntity.badRequest()
                 .body(new ErrorResponseDto("404", errMessage, Collections.emptyList()));
     }
