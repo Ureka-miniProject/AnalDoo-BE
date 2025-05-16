@@ -1,5 +1,6 @@
 package com.Ureka.AnalDoo.domain.competition.dto.request;
 
+import com.Ureka.AnalDoo.domain.competition.dto.customValiid.CompetitionDateCheck;
 import com.Ureka.AnalDoo.domain.entity.Address;
 import com.Ureka.AnalDoo.domain.entity.CompetitionPeriod;
 import com.Ureka.AnalDoo.domain.entity.enums.Local;
@@ -7,17 +8,21 @@ import com.Ureka.AnalDoo.domain.entity.enums.SportType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@CompetitionDateCheck
 public class CompetitionCreateRequest {
 
     @NotBlank(message = "대회명은 필수입니다.")
+    @Size(max = 50,message = "50글자 미만으로 입력해주세요")
     private String name;
 
     @NotBlank(message = "대회 설명은 필수입니다.")
+    @Size(max = 200,message = "200글자 미만으로 입력해주세요")
     private String content;
 
     @NotNull(message = "시작 날짜는 필수입니다.")
@@ -42,11 +47,14 @@ public class CompetitionCreateRequest {
     private Local local;
 
     @NotBlank(message = "도로명은 필수입니다.")
+    @Size(max = 50,message = "50글자 미만으로 입력해주세요")
     private String street;
 
     @NotBlank(message = "우편번호는 필수입니다.")
+    @Size(max = 50,message = "50글자 미만으로 입력해주세요")
     private String zipcode;
 
+    @Size(max = 50,message = "50글자 미만으로 입력해주세요")
     private String detail;
 
     public CompetitionPeriod toCompetitionPeriod() {
